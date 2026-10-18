@@ -1,0 +1,6 @@
+# local working files
+.claude/
+dashboard/index.json
+__pycache__/
+*.pyc
+.env

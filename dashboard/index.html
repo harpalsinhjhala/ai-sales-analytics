@@ -1,0 +1,1143 @@
+<style>
+.sd { font-family: var(--font-anthropic-sans); max-width: 1240px; margin-inline: auto; display: flex; flex-direction: column; gap: var(--cds-gap-xl); container-type: inline-size; }
+
+/* Hero */
+.sd-hero { position: relative; overflow: hidden; padding: clamp(20px, 4cqi, 44px); border: 1px solid var(--color-border-line); border-radius: calc(var(--cds-radius) * 1.5);
+  background:
+    radial-gradient(80% 120% at 100% 0%, color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 20%, transparent), transparent 62%),
+    radial-gradient(55% 90% at 0% 100%, color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 9%, transparent), transparent 70%),
+    var(--color-panel); scroll-margin-top: 72px; }
+.sd-hero::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(color-mix(in srgb, var(--color-fg) 16%, transparent) 1px, transparent 1.2px); background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(55% 75% at 100% 0%, #000, transparent 72%); mask-image: radial-gradient(55% 75% at 100% 0%, #000, transparent 72%); }
+.sd-hero > * { position: relative; }
+.sd-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.sd-badge { display: inline-flex; align-items: center; gap: 6px; font-size: var(--cds-font-size-caption); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--color-border-line); background: color-mix(in srgb, var(--color-panel) 75%, transparent); color: var(--color-fg-muted); white-space: nowrap; }
+.sd-badge i { width: 6px; height: 6px; border-radius: 50%; background: var(--sd-accent, currentColor); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 25%, transparent); }
+.sd-badge svg { width: 12px; height: 12px; flex: none; }
+.sd-badge-ai { color: var(--color-fg); border-color: color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 50%, var(--color-border-line)); background: color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 10%, var(--color-panel)); }
+.sd-badge-ai svg { color: var(--sd-accent, currentColor); }
+.sd-hero h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: clamp(32px, 5.4cqi, 56px); line-height: 1.04; letter-spacing: -.02em; margin: var(--cds-gap-lg) 0 0; max-width: 18ch; }
+.sd-hero h1 em { font-style: italic; white-space: nowrap; color: var(--sd-accent, inherit); }
+.sd-take { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); margin: var(--cds-gap-md) 0 0; max-width: 44rem; line-height: 1.6; }
+.sd-take b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.sd .sd-take b { font-weight: var(--cds-font-weight-medium); }
+.sd-byline { display: flex; align-items: center; gap: var(--cds-gap-sm); margin-top: var(--cds-gap-lg); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.35; }
+.sd-avatar { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: var(--cds-font-weight-medium); letter-spacing: .03em; color: var(--color-panel); flex: none;
+  background: linear-gradient(135deg, var(--sd-accent, var(--color-fg)), color-mix(in srgb, var(--sd-accent, var(--color-fg)) 45%, var(--color-fg))); }
+.sd-byline strong { display: block; color: var(--color-fg); font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.sd .sd-byline strong { font-weight: var(--cds-font-weight-medium); }
+
+/* Build pipeline */
+.sd-flow { list-style: none; margin: var(--cds-gap-xl) 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr)); gap: var(--cds-gap-lg) var(--cds-gap-md); }
+.sd-flow li { position: relative; padding-top: var(--cds-pad-md); border-top: 1px solid var(--color-border-line); display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 1px; align-content: start; }
+.sd-flow li::before { content: ""; position: absolute; top: -4px; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--color-panel); border: 1.5px solid var(--color-fg-muted); box-sizing: border-box; }
+.sd-flow li.sd-flow-ai { border-top-color: var(--sd-accent, var(--color-fg-muted)); }
+.sd-flow li.sd-flow-ai::before { background: var(--sd-accent, var(--color-fg)); border-color: var(--sd-accent, var(--color-fg)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 22%, transparent); }
+.sd-flow-ico { grid-row: span 2; width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--color-fg) 6%, transparent); color: var(--color-fg); }
+.sd-flow-ai .sd-flow-ico { background: color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 18%, transparent); color: var(--sd-accent, var(--color-fg)); }
+.sd-flow-ico svg { width: 16px; height: 16px; }
+.sd-flow b { font-size: var(--cds-font-size-body); color: var(--color-fg); }
+.sd .sd-flow b { font-weight: var(--cds-font-weight-medium); }
+.sd-flow small { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; }
+
+/* Footer */
+.sd-foot { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-lg); display: flex; justify-content: space-between; align-items: center; gap: var(--cds-gap-lg); flex-wrap: wrap; line-height: 1.5; }
+.sd-foot-by { display: flex; align-items: center; gap: var(--cds-gap-sm); }
+.sd-foot-by .sd-avatar { width: 28px; height: 28px; font-size: 10px; }
+.sd-foot strong { color: var(--color-fg); }
+.sd .sd-foot strong { font-weight: var(--cds-font-weight-medium); }
+.sd-foot-src { max-width: 40rem; }
+
+/* Sections */
+.sd-block { display: flex; flex-direction: column; gap: var(--cds-gap-md); scroll-margin-top: 72px; }
+.sd-sec { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-xs) var(--cds-gap-md); flex-wrap: wrap; }
+.sd-sec-h { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); display: flex; align-items: baseline; gap: 10px; }
+.sd-sec-n { font-size: var(--cds-font-size-caption); color: var(--sd-accent, var(--color-fg-muted)); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+.sd-sec-t { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+
+/* Insights */
+.sd-insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-md); }
+@container (min-width: 900px) { .sd-insights { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.sd-ins { display: flex; flex-direction: column; gap: 4px; }
+.sd-ins-ico { width: 32px; height: 32px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: var(--cds-gap-sm); }
+.sd-ins-ico svg { width: 17px; height: 17px; }
+.sd-ins-ico.sd-acc { color: var(--sd-accent, var(--color-fg)); background: color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 15%, transparent); }
+.sd-ins-ico.sd-ok { color: var(--color-ok); background: color-mix(in srgb, var(--color-ok) 13%, transparent); }
+.sd-ins-ico.sd-warn { color: var(--color-bad); background: color-mix(in srgb, var(--color-bad) 13%, transparent); }
+.sd-ins-lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sd-ins-val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: calc(var(--cds-font-size-title) * .9); line-height: 1.1; letter-spacing: -.01em; font-variant-numeric: tabular-nums; min-height: 1.1em; }
+.sd-ins-val.sd-neg { color: var(--color-bad); }
+.sd-ins-det { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+.sd-ins-det span { color: var(--color-fg); }
+
+/* Card motion */
+.sd-card { transition: border-color var(--cds-dur-slow), box-shadow var(--cds-dur-slow), transform var(--cds-dur-slow); }
+.sd-card:hover { border-color: color-mix(in srgb, var(--color-fg) 16%, var(--color-border-line)); }
+.sd-kpi::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, var(--sd-accent, var(--color-fg-muted)), transparent 80%); opacity: 0; transition: opacity var(--cds-dur-slow); }
+.sd-kpi:hover::before { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .sd-pre { opacity: 0; transform: translateY(14px); }
+  .sd-pre.sd-in { opacity: 1; transform: none; transition: opacity calc(var(--cds-dur-slow) * 3) var(--cds-ease-out), transform calc(var(--cds-dur-slow) * 3) var(--cds-ease-out), border-color var(--cds-dur-slow), box-shadow var(--cds-dur-slow); }
+  .sd-kpi:hover, .sd-ins:hover { transform: translateY(-2px); box-shadow: 0 14px 32px -20px color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 70%, transparent); }
+}
+
+/* KPI cards */
+.sd-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: var(--cds-gap-md); }
+@container (min-width: 700px) { .sd-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); } .sd-kpi-val { font-size: clamp(22px, 2.7cqi, var(--cds-font-size-title)); } }
+.sd-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); position: relative; min-width: 0; }
+.sd-kpi { display: flex; flex-direction: column; gap: var(--cds-gap-xs); padding-bottom: var(--cds-pad-md); overflow: hidden; }
+.sd-kpi-top { display: flex; justify-content: space-between; align-items: center; gap: var(--cds-gap-xs) var(--cds-gap-sm); flex-wrap: wrap; }
+.sd-kpi-lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sd-kpi-val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.01em; margin-top: var(--cds-gap-xs); min-height: 1.1em; }
+.sd-kpi-prior { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; min-height: 1.4em; }
+.sd-pill { display: inline-flex; align-items: center; gap: 3px; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; padding: 1px 7px 1px 5px; border-radius: 999px; min-height: 1.4em; white-space: nowrap; }
+.sd-pill svg { width: 11px; height: 11px; flex: none; }
+.sd-pill.sd-good { color: var(--color-ok); background: color-mix(in srgb, var(--color-ok) 12%, transparent); }
+.sd-pill.sd-bad { color: var(--color-bad); background: color-mix(in srgb, var(--color-bad) 12%, transparent); }
+.sd-pill.sd-flat { color: var(--color-fg-muted); background: color-mix(in srgb, var(--color-fg-muted) 12%, transparent); }
+.sd-spark { height: 40px; margin: var(--cds-gap-sm) calc(-1 * var(--cds-pad-lg)) calc(-1 * var(--cds-pad-md)); }
+.sd-spark svg { display: block; }
+
+/* Main grid */
+.sd-main { display: grid; grid-template-columns: 1fr; gap: var(--cds-gap-md); }
+@container (min-width: 900px) { .sd-main { grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); } }
+.sd-card h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.sd-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 2px 0 0; }
+.sd-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--cds-gap-md); flex-wrap: wrap; margin-bottom: var(--cds-gap-lg); }
+
+/* Segmented control */
+.sd-ctl { display: flex; align-items: center; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+.sd-ctl-lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sd-seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; padding: 3px; gap: 2px; border-radius: 999px; background: color-mix(in srgb, var(--color-fg) 6%, transparent); border: 1px solid var(--color-border-line); }
+.sd-seg button { all: unset; cursor: pointer; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: 5px 11px; border-radius: 999px; white-space: nowrap; transition: background var(--cds-dur-slow), color var(--cds-dur-slow), box-shadow var(--cds-dur-slow); }
+.sd-seg button:hover { color: var(--color-fg); background: color-mix(in srgb, var(--color-fg) 8%, transparent); }
+.sd-seg button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-panel); box-shadow: 0 1px 3px rgba(0, 0, 0, .18); }
+.sd-seg button:focus-visible { outline: 2px solid var(--color-fg-muted); outline-offset: 2px; }
+
+/* Heatmap + year-over-year */
+.sd-main2 { display: grid; grid-template-columns: 1fr; gap: var(--cds-gap-md); }
+@container (min-width: 900px) { .sd-main2 { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); } }
+.sd-heat, .sd-yoy { min-height: 260px; position: relative; }
+.sd-heat svg, .sd-yoy svg { display: block; overflow: visible; }
+.sd-heat text, .sd-yoy text { font-size: var(--cds-font-size-caption); fill: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.sd-heat .sd-cell-t { font-weight: var(--cds-font-weight-medium); pointer-events: none; }
+.sd-heat .sd-head-t { fill: var(--color-fg); }
+.sd-yoy .sd-chg { font-weight: var(--cds-font-weight-medium); }
+.sd-scale { display: flex; align-items: center; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-md); font-variant-numeric: tabular-nums; }
+.sd-scale i { height: 6px; width: 7rem; border-radius: 999px; }
+
+/* Charts */
+.sd-chart { min-height: 300px; position: relative; }
+.sd-chart svg { display: block; overflow: visible; }
+.sd-chart text, .sd-spark text { font-size: var(--cds-font-size-caption); fill: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.sd-chart .sd-end { fill: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.sd-gl { stroke: var(--cds-chart-grid); }
+.sd-ref { stroke: var(--cds-chart-reference); stroke-dasharray: 3 3; }
+.sd-rule { stroke: var(--cds-chart-axis); }
+@media (prefers-reduced-motion: no-preference) {
+  .sd-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: sd-draw calc(var(--cds-dur-slow) * 4) var(--cds-ease-out) forwards; }
+  .sd-fade { opacity: 0; animation: sd-fade calc(var(--cds-dur-slow) * 3) var(--cds-ease-out) forwards; }
+  .sd-grow { transform-origin: left; animation: sd-grow calc(var(--cds-dur-slow) * 3) var(--cds-ease-out) both; }
+}
+@keyframes sd-draw { to { stroke-dashoffset: 0; } }
+@keyframes sd-fade { to { opacity: 1; } }
+@keyframes sd-grow { from { transform: scaleX(0); } }
+@media (prefers-reduced-motion: no-preference) { .sd-rise { animation: sd-rise calc(var(--cds-dur-slow) * 3) var(--cds-ease-out) both; } }
+@keyframes sd-rise { from { transform: scaleY(0); } }
+
+#trend { display: flex; flex-direction: column; }
+#trend .sd-chart { flex: 1 1 auto; }
+
+/* Breakdown list */
+.sd-list { display: flex; flex-direction: column; gap: var(--cds-gap-md); min-height: 300px; }
+.sd-list[hidden] { display: none; }
+.sd-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-body); }
+.sd-item-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sd-item-val { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sd-item-val small { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-left: var(--cds-gap-xs); }
+.sd-track { position: relative; height: 6px; border-radius: 999px; background: var(--cds-chart-grid); margin-top: 6px; overflow: hidden; }
+.sd-track span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
+.sd-legend { display: flex; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-lg); }
+.sd-sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+
+/* Tooltip */
+.sd-tip { position: absolute; display: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); pointer-events: none; z-index: 2; white-space: nowrap; }
+.sd-tip-h { color: var(--cds-text-secondary); margin-bottom: 2px; }
+.sd-tip-r { font-variant-numeric: tabular-nums; }
+.sd-tip-sub { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+
+/* Table */
+.sd-tools { display: flex; gap: var(--cds-gap-sm); align-items: center; flex-wrap: wrap; }
+.sd-search { font: inherit; font-size: var(--cds-font-size-caption); padding: 5px 12px; border: 1px solid var(--color-border-line); border-radius: 999px; background: var(--color-bg); color: var(--color-fg); width: 14rem; max-width: 100%; }
+.sd-search:focus { outline: none; border-color: var(--color-fg-muted); }
+.sd-count { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.sd-tablebox { max-height: 26rem; overflow: auto; min-height: 10rem; margin: 0 calc(-1 * var(--cds-pad-lg)) calc(-1 * var(--cds-pad-lg)); border-top: 1px solid var(--color-border-line); }
+.sd-table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.sd-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; padding: 0; box-shadow: inset 0 -1px 0 var(--color-border-line); font-weight: 400; }
+.sd-table th button { all: unset; cursor: pointer; display: block; padding: var(--cds-pad-sm) var(--cds-pad-md); color: var(--color-fg-muted); white-space: nowrap; }
+.sd-table th button:hover, .sd-table th[aria-sort="ascending"] button, .sd-table th[aria-sort="descending"] button { color: var(--color-fg); }
+.sd-table th[aria-sort="ascending"] button::after { content: " ↑"; }
+.sd-table th[aria-sort="descending"] button::after { content: " ↓"; }
+.sd-table th.sd-num button { text-align: right; }
+.sd-table td { padding: 6px var(--cds-pad-md); white-space: nowrap; border-bottom: 1px solid color-mix(in srgb, var(--color-border-line) 50%, transparent); }
+.sd-table td.sd-num { text-align: right; }
+.sd-table td.sd-neg { color: var(--color-bad); }
+.sd-table tbody tr:hover td { background: color-mix(in srgb, var(--color-fg) 4%, transparent); }
+
+/* States */
+.sd-fail { display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.sd-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="sd">
+  <header class="sd-hero" id="overview">
+    <div class="sd-badges">
+      <span class="sd-badge"><i></i>Portfolio project</span>
+      <span class="sd-badge"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="8" cy="4" rx="5" ry="2"/><path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/></svg>Microsoft Fabric Lakehouse</span>
+      <span class="sd-badge sd-badge-ai"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8l1.5 4.1 4.1 1.5-4.1 1.5L8 13l-1.5-4.1L2.4 7.4l4.1-1.5z"/><path d="M13 11.5l.6 1.4 1.4.6-1.4.6L13 15.5l-.6-1.4-1.4-.6 1.4-.6z"/></svg>Built with AI</span>
+    </div>
+    <h1>AI-powered <em>sales analytics</em></h1>
+    <p class="sd-take">
+      Sales for <span class="sd-w-range"><span class="sd-w-from" data-source="kpi" data-row="0" data-field="CurFrom">—</span> – <span class="sd-w-to" data-source="kpi" data-row="0" data-field="CurTo">—</span></span> reached
+      <b data-source="kpi" data-where="Metric=Sales" data-field="Current" class="sd-t-cur dash-skeleton">—</b>,
+      <span data-source="kpi" data-where="Metric=Sales" data-field="Change" class="sd-t-chg dash-skeleton">—</span>
+      on the same months a year earlier.
+      <b data-source="by_segment" data-field="Segment" data-row="0" class="sd-t-topseg dash-skeleton">—</b> earns the most profit.
+    </p>
+    <div class="sd-byline">
+      <span class="sd-avatar" aria-hidden="true">HJ</span>
+      <span>Designed and built by<strong>HarpalSinh Jhala</strong></span>
+    </div>
+    <ol class="sd-flow" aria-label="How this dashboard was built">
+      <li>
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="8" cy="4" rx="5" ry="2"/><path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/></svg></span>
+        <b>Fabric Lakehouse</b><small>Source data in OneLake</small>
+      </li>
+      <li>
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 7l2 1.5L5 10M8.5 10H11"/></svg></span>
+        <b>SQL analytics endpoint</b><small>T-SQL with Entra ID sign-in</small>
+      </li>
+      <li>
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4L2 8l4 4M10 4l4 4-4 4"/></svg></span>
+        <b>Python pipeline</b><small>Automated export and shaping</small>
+      </li>
+      <li class="sd-flow-ai">
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8l1.5 4.1 4.1 1.5-4.1 1.5L8 13l-1.5-4.1L2.4 7.4l4.1-1.5z"/><path d="M13 11.5l.6 1.4 1.4.6-1.4.6L13 15.5l-.6-1.4-1.4-.6 1.4-.6z"/></svg></span>
+        <b>AI-assisted engineering</b><small>Analysis, design and code with Claude Code agents</small>
+      </li>
+      <li>
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 13.5h12M4 10.5v3M8 6.5v7M12 3v10.5"/></svg></span>
+        <b>Interactive dashboard</b><small>D3.js, responsive, light and dark</small>
+      </li>
+    </ol>
+  </header>
+
+  <section class="sd-block" id="headline">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">01</span>Headline numbers</h2>
+      <span class="sd-sec-t"><span class="sd-w-range"><span class="sd-w-from" data-source="kpi" data-row="0" data-field="CurFrom">—</span> – <span class="sd-w-to" data-source="kpi" data-row="0" data-field="CurTo">—</span></span>, compared with the same months of the year before</span>
+    </div>
+    <div class="sd-kpis">
+      <div class="sd-card sd-kpi" data-m="Sales" data-up="good">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Sales</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Sales" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Sales" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Sales" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+      <div class="sd-card sd-kpi" data-m="Profit" data-up="good">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Profit</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Profit" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Profit" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Profit" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+      <div class="sd-card sd-kpi" data-m="Margin" data-up="good">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Profit margin</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Margin" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Margin" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Margin" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+      <div class="sd-card sd-kpi" data-m="Units_Sold" data-up="good">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Units sold</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Units_Sold" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Units_Sold" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Units_Sold" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+      <div class="sd-card sd-kpi" data-m="Discounts" data-up="bad">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Discounts given</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Discounts" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Discounts" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Discounts" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sd-block" id="insights">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">02</span>Key insights</h2>
+      <span class="sd-sec-t">Picked out automatically from the data</span>
+    </div>
+    <div class="sd-insights">
+      <div class="sd-card sd-ins" data-id="best_month">
+        <span class="sd-ins-ico sd-acc"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5l4.5-4.5 3 3 5.5-6.5"/><path d="M11.5 5.5h4v4"/></svg></span>
+        <span class="sd-ins-lbl">Best month for sales</span>
+        <div class="sd-ins-val dash-skeleton" data-source="insights" data-where="Id=best_month" data-field="Value">—</div>
+        <div class="sd-ins-det"><span data-source="insights" data-where="Id=best_month" data-field="Subject" data-fill="Subject">—</span>, the strongest month in the data</div>
+      </div>
+      <div class="sd-card sd-ins" data-id="best_pair">
+        <span class="sd-ins-ico sd-ok"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.2l1.7 4.6 4.6 1.7-4.6 1.7L9 14.8l-1.7-4.6-4.6-1.7 4.6-1.7z"/></svg></span>
+        <span class="sd-ins-lbl">Highest-margin pairing</span>
+        <div class="sd-ins-val dash-skeleton" data-source="insights" data-where="Id=best_pair" data-field="Value">—</div>
+        <div class="sd-ins-det">Margin for <span data-source="insights" data-where="Id=best_pair" data-field="Subject" data-fill="Subject">—</span>, the best country and product combination</div>
+      </div>
+      <div class="sd-card sd-ins" data-id="discount_gap">
+        <span class="sd-ins-ico sd-warn"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9.6V3.5a1 1 0 0 1 1-1h6.1l6 6-7.1 7.1z"/><circle cx="6.2" cy="6.2" r="1.1"/></svg></span>
+        <span class="sd-ins-lbl">Cost of heavy discounting</span>
+        <div class="sd-ins-val dash-skeleton" data-source="insights" data-where="Id=discount_gap" data-field="Value">—</div>
+        <div class="sd-ins-det">Margin is <span data-source="insights" data-where="Id=discount_gap" data-field="High" data-fill="High">—</span> with high discounts against <span data-source="insights" data-where="Id=discount_gap" data-field="None" data-fill="None">—</span> with none</div>
+      </div>
+      <div class="sd-card sd-ins" data-id="weak_segment">
+        <span class="sd-ins-ico sd-warn"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.8l6.8 12H2.2z"/><path d="M9 7.6v3.2M9 13v.01"/></svg></span>
+        <span class="sd-ins-lbl">Weakest segment</span>
+        <div class="sd-ins-val dash-skeleton" data-source="insights" data-where="Id=weak_segment" data-field="Value">—</div>
+        <div class="sd-ins-det">Margin in <span data-source="insights" data-where="Id=weak_segment" data-field="Subject" data-fill="Subject">—</span>, the lowest of any segment</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sd-block" id="trends">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">03</span>Trends and mix</h2>
+      <span class="sd-sec-t">Use the toggles to switch what each chart shows</span>
+    </div>
+    <div class="sd-main">
+    <div class="sd-card" id="trend">
+      <div class="sd-card-head">
+        <div>
+          <h3>Monthly trend</h3>
+          <p class="sd-note">Every month in the data. The dashed line is the monthly average.</p>
+        </div>
+        <div class="sd-ctl"><span class="sd-ctl-lbl">Show</span>
+        <div class="sd-seg" role="group" aria-label="Trend metric">
+          <button type="button" data-metric="Sales" aria-pressed="true">Sales</button>
+          <button type="button" data-metric="Profit" aria-pressed="false">Profit</button>
+          <button type="button" data-metric="Margin" aria-pressed="false">Margin</button>
+          <button type="button" data-metric="Units_Sold" aria-pressed="false">Units</button>
+        </div></div>
+      </div>
+      <div class="sd-chart dash-skeleton" data-source="by_month"></div>
+      <div class="sd-tip"></div>
+    </div>
+
+    <div class="sd-card" id="breakdown">
+      <div class="sd-card-head">
+        <div>
+          <h3>Breakdown</h3>
+          <p class="sd-note">All months, most profitable first.</p>
+        </div>
+        <div class="sd-ctl"><span class="sd-ctl-lbl">View by</span>
+        <div class="sd-seg" role="group" aria-label="Breakdown dimension">
+          <button type="button" data-dim="seg" aria-pressed="true">Segment</button>
+          <button type="button" data-dim="cty" aria-pressed="false">Country</button>
+          <button type="button" data-dim="prd" aria-pressed="false">Product</button>
+          <button type="button" data-dim="dsc" aria-pressed="false">Discount</button>
+        </div></div>
+      </div>
+      <div class="sd-list dash-skeleton" data-dim="seg" data-source="by_segment" data-key="Segment"></div>
+      <div class="sd-list" data-dim="cty" data-source="by_country" data-key="Country" hidden></div>
+      <div class="sd-list" data-dim="prd" data-source="by_product" data-key="Product" hidden></div>
+      <div class="sd-list" data-dim="dsc" data-source="by_discount" data-key="Discount_Band" hidden></div>
+      <div class="sd-legend"><span><i class="sd-sw sd-sw-sales"></i>Sales</span><span><i class="sd-sw sd-sw-profit"></i>Profit</span></div>
+    </div>
+    </div>
+  </section>
+
+  <section class="sd-block" id="deep-dive">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">04</span>Deep dive</h2>
+      <span class="sd-sec-t">Where profit comes from, and how the latest months compare</span>
+    </div>
+    <div class="sd-main2">
+    <div class="sd-card" id="heatmap">
+      <div class="sd-card-head">
+        <div>
+          <h3>Country × product</h3>
+          <p class="sd-note">Every pairing across all months. Stronger color means higher.</p>
+        </div>
+        <div class="sd-ctl"><span class="sd-ctl-lbl">Color by</span>
+        <div class="sd-seg" role="group" aria-label="Heatmap metric">
+          <button type="button" data-hm="Margin" aria-pressed="true">Margin</button>
+          <button type="button" data-hm="Profit" aria-pressed="false">Profit</button>
+          <button type="button" data-hm="Sales" aria-pressed="false">Sales</button>
+        </div></div>
+      </div>
+      <div class="sd-heat dash-skeleton" data-source="country_product"></div>
+      <div class="sd-scale"><span class="sd-scale-lo"></span><i class="sd-scale-bar"></i><span class="sd-scale-hi"></span></div>
+      <div class="sd-tip"></div>
+    </div>
+
+    <div class="sd-card" id="yoy">
+      <div class="sd-card-head">
+        <div>
+          <h3>Same months, year over year</h3>
+          <p class="sd-note">Each month the two years share, side by side.</p>
+        </div>
+        <div class="sd-ctl"><span class="sd-ctl-lbl">Show</span>
+        <div class="sd-seg" role="group" aria-label="Year-over-year metric">
+          <button type="button" data-yy="Sales" aria-pressed="true">Sales</button>
+          <button type="button" data-yy="Profit" aria-pressed="false">Profit</button>
+          <button type="button" data-yy="Units" aria-pressed="false">Units</button>
+        </div></div>
+      </div>
+      <div class="sd-yoy dash-skeleton" data-source="yoy_months"></div>
+      <div class="sd-legend sd-yoy-legend" data-source="yoy_months"></div>
+      <div class="sd-tip"></div>
+    </div>
+    </div>
+  </section>
+
+  <section class="sd-block" id="data">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">05</span>The data</h2>
+      <span class="sd-sec-t">dbo.sample_data, exactly as exported</span>
+    </div>
+    <div class="sd-card" id="rows">
+    <div class="sd-card-head">
+      <div>
+        <h3>All rows</h3>
+        <p class="sd-note">The full table as exported. Click a header to sort.</p>
+      </div>
+      <div class="sd-tools">
+        <input class="sd-search" type="search" placeholder="Search" aria-label="Search rows">
+        <span class="sd-count"></span>
+      </div>
+    </div>
+    <div class="sd-tablebox dash-skeleton">
+      <table class="sd-table" data-source="table_rows" data-row-key="Row"><thead><tr></tr></thead><tbody></tbody></table>
+    </div>
+    </div>
+  </section>
+
+  <footer class="sd-foot">
+    <div class="sd-foot-by">
+      <span class="sd-avatar" aria-hidden="true">HJ</span>
+      <span><strong>HarpalSinh Jhala</strong><br>Data analytics · Microsoft Fabric · AI-assisted engineering</span>
+    </div>
+    <span class="sd-foot-src">Data: Microsoft's financial sample dataset, stored as <strong>dbo.sample_data</strong> in a Fabric lakehouse and exported through its SQL analytics endpoint. Built with Python, D3.js and Claude Code.</span>
+  </footer>
+</div>
+
+<script>
+dash.calc('kpi', {
+  title: 'Latest months vs a year earlier',
+  description: 'Sums each metric over the months the earlier year has, in the latest year and the year before; Change is the growth rate (for margin, the difference in margin).',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const year = Math.max(...sample_data.map(r => Number(r.Year)));
+    const months = new Set(sample_data.filter(r => Number(r.Year) === year - 1).map(r => Number(r.Month_Number)));
+    const sum = (y, k) => sample_data
+      .filter(r => Number(r.Year) === y && months.has(Number(r.Month_Number)))
+      .reduce((s, r) => s + (Number(r[k]) || 0), 0);
+    const ms = [...months].sort((a, b) => a - b);
+    const CurFrom = `${year}-${String(ms[0]).padStart(2, '0')}`;
+    const CurTo = `${year}-${String(ms[ms.length - 1]).padStart(2, '0')}`;
+    const out = ['Sales', 'Profit', 'Units_Sold', 'Discounts'].map(Metric => {
+      const Current = sum(year, Metric), Prior = sum(year - 1, Metric);
+      return { Metric, Current, Prior, Change: Prior ? Current / Prior - 1 : null, CurFrom, CurTo };
+    });
+    const [s, p] = out;
+    const Current = s.Current ? p.Current / s.Current : 0, Prior = s.Prior ? p.Prior / s.Prior : 0;
+    out.splice(2, 0, { Metric: 'Margin', Current, Prior, Change: Current - Prior, CurFrom, CurTo });
+    return out;
+  }
+});
+
+dash.calc('by_month', {
+  title: 'Metrics by month',
+  description: 'Sales, profit, units and discounts summed per year and month; margin is profit divided by sales.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const Month = `${r.Year}-${String(r.Month_Number).padStart(2, '0')}`;
+      const o = m.get(Month) || { Month, Sales: 0, Profit: 0, Units_Sold: 0, Discounts: 0 };
+      for (const k of ['Sales', 'Profit', 'Units_Sold', 'Discounts']) o[k] += Number(r[k]) || 0;
+      m.set(Month, o);
+    }
+    return [...m.values()]
+      .map(o => Object.assign(o, { Margin: o.Sales ? o.Profit / o.Sales : 0 }))
+      .sort((a, b) => a.Month < b.Month ? -1 : 1);
+  }
+});
+
+dash.calc('by_segment', {
+  title: 'Sales and profit by segment',
+  description: 'Sales and profit summed per segment, most profitable first.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const o = m.get(r.Segment) || { Segment: r.Segment, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(r.Segment, o);
+    }
+    return [...m.values()].sort((a, b) => b.Profit - a.Profit);
+  }
+});
+
+dash.calc('by_country', {
+  title: 'Sales and profit by country',
+  description: 'Sales and profit summed per country, most profitable first.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const o = m.get(r.Country) || { Country: r.Country, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(r.Country, o);
+    }
+    return [...m.values()].sort((a, b) => b.Profit - a.Profit);
+  }
+});
+
+dash.calc('by_product', {
+  title: 'Sales and profit by product',
+  description: 'Sales and profit summed per product, most profitable first.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const o = m.get(r.Product) || { Product: r.Product, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(r.Product, o);
+    }
+    return [...m.values()].sort((a, b) => b.Profit - a.Profit);
+  }
+});
+
+dash.calc('by_discount', {
+  title: 'Sales and profit by discount band',
+  description: 'Sales and profit summed per discount band, most profitable first.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const o = m.get(r.Discount_Band) || { Discount_Band: r.Discount_Band, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(r.Discount_Band, o);
+    }
+    return [...m.values()].sort((a, b) => b.Profit - a.Profit);
+  }
+});
+
+dash.calc('country_product', {
+  title: 'Country by product',
+  description: 'Sales and profit summed for each country and product pair; margin is profit divided by sales.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const k = `${r.Country}|${r.Product}`;
+      const o = m.get(k) || { Country: r.Country, Product: r.Product, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(k, o);
+    }
+    return [...m.values()].map(o => Object.assign(o, { Margin: o.Sales ? o.Profit / o.Sales : 0 }));
+  }
+});
+
+dash.calc('yoy_months', {
+  title: 'Same months, two years',
+  description: 'Sales, profit and units per month for the latest year and the year before, for the months both years have.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const year = Math.max(...sample_data.map(r => Number(r.Year)));
+    const m = new Map();
+    for (const r of sample_data) {
+      const y = Number(r.Year);
+      if (y !== year && y !== year - 1) continue;
+      const n = Number(r.Month_Number), s = y === year ? 'Cur' : 'Prior';
+      const o = m.get(n) || { Month_Number: n, Month: r.Month_Name, Year: year, PriorYear: year - 1,
+        Sales_Cur: 0, Sales_Prior: 0, Profit_Cur: 0, Profit_Prior: 0, Units_Cur: 0, Units_Prior: 0, both: 0 };
+      o[`Sales_${s}`] += Number(r.Sales) || 0;
+      o[`Profit_${s}`] += Number(r.Profit) || 0;
+      o[`Units_${s}`] += Number(r.Units_Sold) || 0;
+      o.both |= s === 'Cur' ? 1 : 2;
+      m.set(n, o);
+    }
+    return [...m.values()].filter(o => o.both === 3)
+      .sort((a, b) => a.Month_Number - b.Month_Number)
+      .map(({ both, ...o }) => o);
+  }
+});
+
+dash.calc('insights', {
+  title: 'Key insights',
+  description: 'The best month by sales, the highest-margin country and product pair, the margin gap between high and no discounts, and the lowest-margin segment.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const group = key => {
+      const m = new Map();
+      for (const r of sample_data) {
+        const k = key(r), o = m.get(k) || { k, Sales: 0, Profit: 0 };
+        o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+        m.set(k, o);
+      }
+      return [...m.values()].map(o => Object.assign(o, { Margin: o.Sales ? o.Profit / o.Sales : 0 }));
+    };
+    const top = (list, f) => list.reduce((a, b) => f(b) > f(a) ? b : a);
+    const month = top(group(r => `${r.Month_Name} ${r.Year}`), o => o.Sales);
+    const pair = top(group(r => `${r.Country} · ${r.Product}`), o => o.Margin);
+    const bands = group(r => r.Discount_Band);
+    const high = bands.find(b => b.k === 'High'), none = bands.find(b => b.k === 'None');
+    const seg = top(group(r => r.Segment), o => -o.Margin);
+    return [
+      { Id: 'best_month', Subject: month.k, Value: month.Sales },
+      { Id: 'best_pair', Subject: pair.k, Value: pair.Margin },
+      { Id: 'discount_gap', Subject: 'High vs none', Value: high && none ? high.Margin - none.Margin : null, High: high ? high.Margin : null, None: none ? none.Margin : null },
+      { Id: 'weak_segment', Subject: seg.k, Value: seg.Margin }
+    ];
+  }
+});
+
+dash.calc('table_rows', {
+  title: 'Rows with a row number',
+  description: 'Every row of the snapshot, numbered from 1 in file order so each can be told apart.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => sample_data.map((r, i) => Object.assign({ Row: i + 1 }, r))
+});
+
+(function () {
+  const root = document.querySelector('.sd');
+  root.style.setProperty('--sd-accent', dash.colors[0]);
+  const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
+  const money = v => (v < 0 ? '-$' : '$') + compact.format(Math.abs(v));
+  const pct = d3.format('.1%');
+  const fmt = { Sales: money, Profit: money, Discounts: money, Margin: pct, Units_Sold: v => compact.format(v) };
+  const label = { Sales: 'Sales', Profit: 'Profit', Margin: 'Profit margin', Units_Sold: 'Units sold', Discounts: 'Discounts' };
+  const mParse = d3.utcParse('%Y-%m');
+  const mLong = s => { const d = mParse(s); return d ? d3.utcFormat('%B %Y')(d) : s; };
+  const mMon = s => { const d = mParse(s); return d ? d3.utcFormat('%b')(d) : s; };
+  const mYear = s => { const d = mParse(s); return d ? d3.utcFormat('%Y')(d) : s; };
+  const numFmt = d3.format(',.2~f');
+  const money0 = d3.format('$,.0f');
+  const MONEY_COLS = new Set(['Manufacturing_Price', 'Sale_Price', 'Gross_Sales', 'Discounts', 'Sales', 'COGS', 'Profit']);
+  const PLAIN_COLS = new Set(['Year', 'Month_Number']);
+  let gid = 0;
+
+  const ARROW_UP = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10V2.5M2.5 6 6 2.5 9.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const ARROW_DN = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v7.5M2.5 6 6 9.5 9.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  root.querySelectorAll('.sd-sw-sales').forEach(e => { e.style.background = dash.colors[0]; e.style.opacity = .3; });
+  root.querySelectorAll('.sd-sw-profit').forEach(e => e.style.background = dash.colors[0]);
+
+  const unskel = el => el.classList.remove('dash-skeleton');
+  const isErr = s => s === 'error' || s === 'connect' || s === 'declined' || s === 'missing';
+  const fail = el => { unskel(el); el.textContent = ''; const f = document.createElement('div'); f.className = 'sd-fail'; f.textContent = 'Failed to load'; el.appendChild(f); };
+
+  function measure(svg, texts, cls) {
+    let w = 0;
+    const g = svg.append('g').attr('opacity', 0);
+    for (const t of texts) { const n = g.append('text').attr('class', cls || null).text(t).node(); w = Math.max(w, n.getComputedTextLength()); }
+    g.remove();
+    return w;
+  }
+
+  function gradient(svg, color) {
+    const id = `sd-g${++gid}`;
+    const lg = svg.append('defs').append('linearGradient').attr('id', id).attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', 1);
+    [[0, .26], [.25, .16], [.5, .08], [.75, .03], [1, 0]].forEach(([o, a]) =>
+      lg.append('stop').attr('offset', o).attr('style', `stop-color:${color};stop-opacity:${a}`));
+    return `url(#${id})`;
+  }
+
+  /* ---------- KPI cards ---------- */
+  function drawSpark(el, rows, metric, nRecent) {
+    el.textContent = '';
+    const W = Math.max(el.clientWidth, 120), H = 40, pad = 3;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'none');
+    const x = d3.scaleLinear([0, rows.length - 1], [0, W]);
+    const ext = d3.extent(rows, d => d[metric]);
+    const y = d3.scaleLinear([ext[0] - (ext[1] - ext[0]) * .15, ext[1]], [H - 1, pad]);
+    const pts = rows.map((d, i) => [x(i), y(d[metric])]);
+    svg.append('path').attr('d', d3.area().x(p => p[0]).y0(H).y1(p => p[1])(pts)).attr('fill', gradient(svg, dash.colors[0]));
+    const split = Math.max(0, rows.length - nRecent);
+    svg.append('path').attr('d', d3.line()(pts.slice(0, split + 1))).attr('fill', 'none')
+      .attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 1.5).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('vector-effect', 'non-scaling-stroke');
+    svg.append('path').attr('d', d3.line()(pts.slice(split))).attr('fill', 'none')
+      .attr('stroke', dash.colors[0]).attr('stroke-width', 1.75).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('vector-effect', 'non-scaling-stroke');
+  }
+
+  function fillKpis(kpi, months) {
+    const ok = kpi.status === 'ok' && kpi.data.length;
+    const recent = ok ? (() => { const k = kpi.data[0]; return months.filter(m => m.Month >= k.CurFrom && m.Month <= k.CurTo).length; })() : 0;
+    root.querySelectorAll('.sd-kpi').forEach(card => {
+      const m = card.dataset.m;
+      const val = card.querySelector('.sd-kpi-val'), pill = card.querySelector('.sd-pill'), prior = card.querySelector('.sd-kpi-prior'), spark = card.querySelector('.sd-spark');
+      const row = ok ? kpi.data.find(r => r.Metric === m) : null;
+      if (row) {
+        [val, pill].forEach(unskel);
+        val.textContent = fmt[m](row.Current);
+        prior.textContent = `from ${fmt[m](row.Prior)}`;
+        const c = row.Change;
+        if (c == null) { pill.className = 'sd-pill sd-flat'; pill.textContent = 'new'; }
+        else {
+          const up = c > 0, flat = Math.abs(c) < 0.0005;
+          const good = flat ? null : (up === (card.dataset.up === 'good'));
+          pill.className = 'sd-pill ' + (flat ? 'sd-flat' : good ? 'sd-good' : 'sd-bad');
+          pill.innerHTML = flat ? '' : (up ? ARROW_UP : ARROW_DN);
+          const txt = m === 'Margin' ? `${d3.format('.1f')(Math.abs(c) * 100)} pts` : d3.format('.1%')(Math.abs(c));
+          pill.appendChild(document.createTextNode(txt));
+        }
+      } else if (kpi.status !== 'loading') {
+        [val, pill].forEach(unskel);
+        if (isErr(kpi.status)) { fail(val); } else val.textContent = '—';
+        pill.textContent = ''; pill.className = 'sd-pill'; prior.textContent = '';
+      }
+      if (months.length) drawSpark(spark, months, m, recent || 4); else spark.textContent = '';
+    });
+  }
+
+  /* ---------- Trend chart ---------- */
+  let trendMetric = 'Sales', animateTrend = true;
+  const trendEl = root.querySelector('#trend .sd-chart');
+  const trendCard = root.querySelector('#trend'), trendTip = trendCard.querySelector('.sd-tip');
+
+  function drawTrend(rows) {
+    const el = trendEl, metric = trendMetric, f = fmt[metric];
+    el.textContent = '';
+    const W = Math.max(el.clientWidth, 280), H = Math.max(300, Math.floor(el.clientHeight)), mt = 28, mb = 30;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
+    const data = rows.map(d => ({ d: mParse(d.Month), m: d.Month, v: d[metric] }));
+    const vmax = d3.max(data, d => d.v) || 1;
+    const y = d3.scaleLinear([0, vmax], [H - mb, mt]).nice(4);
+    const ticks = y.ticks(4);
+    const ml = Math.ceil(measure(svg, ticks.map(f))) + 12;
+    const last = data[data.length - 1];
+    const mr = Math.ceil(measure(svg, [f(last.v)], 'sd-end')) + 16;
+    const x = d3.scaleUtc(d3.extent(data, d => d.d), [ml, W - mr]);
+
+    // grid + y labels
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('class', 'sd-gl')
+      .attr('x1', ml).attr('x2', W - mr).attr('y1', d => y(d)).attr('y2', d => y(d));
+    svg.append('g').selectAll('text').data(ticks).join('text')
+      .attr('x', ml - 12).attr('y', d => y(d)).attr('dy', '0.32em').attr('text-anchor', 'end').text(f);
+
+    // x labels: months, with the year under January and the first month
+    const minGap = measure(svg, ['May']) + 14;
+    const every = Math.max(1, Math.ceil(minGap / ((W - ml - mr) / Math.max(1, data.length - 1))));
+    const xt = data.filter((d, i) => i % every === 0);
+    const xg = svg.append('g');
+    xg.selectAll('text.m').data(xt).join('text').attr('class', 'm')
+      .attr('x', d => x(d.d)).attr('y', H - mb + 18).attr('text-anchor', 'middle').text(d => mMon(d.m));
+    const yearStarts = data.filter((d, i) => i === 0 || d.m.endsWith('-01'));
+    yearStarts.forEach(d => {
+      svg.append('text').attr('x', x(d.d)).attr('y', mt - 14).attr('text-anchor', 'middle').attr('class', 'sd-end').text(mYear(d.m));
+      if (d !== data[0]) svg.append('line').attr('class', 'sd-gl').attr('x1', x(d.d)).attr('x2', x(d.d)).attr('y1', mt - 6).attr('y2', H - mb);
+    });
+
+    // average
+    const avg = d3.mean(data, d => d.v);
+    svg.append('line').attr('class', 'sd-ref').attr('x1', ml).attr('x2', W - mr).attr('y1', y(avg)).attr('y2', y(avg));
+    if (ticks.every(tk => Math.abs(y(tk) - y(avg)) > 13)) svg.append('text').attr('x', ml - 12).attr('y', y(avg)).attr('dy', '0.32em').attr('text-anchor', 'end').attr('class', 'sd-end').text('Avg');
+
+    // area + line
+    const area = d3.area().x(d => x(d.d)).y0(y(0)).y1(d => y(d.v));
+    const line = d3.line().x(d => x(d.d)).y(d => y(d.v));
+    svg.append('path').attr('d', area(data)).attr('fill', gradient(svg, dash.colors[0])).attr('class', animateTrend ? 'sd-fade' : null);
+    svg.append('path').attr('d', line(data)).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 2)
+      .attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('pathLength', 1).attr('class', animateTrend ? 'sd-draw' : null)
+      .on('animationend', function () { this.removeAttribute('class'); this.removeAttribute('pathLength'); });
+
+    // peak marker
+    const peak = data.reduce((a, b) => b.v > a.v ? b : a);
+    if (peak !== last) {
+      svg.append('circle').attr('cx', x(peak.d)).attr('cy', y(peak.v)).attr('r', 3).attr('fill', 'var(--color-panel)').attr('stroke', dash.colors[0]).attr('stroke-width', 1.5);
+      const pl = svg.append('text').attr('x', x(peak.d)).attr('y', y(peak.v) - 10).attr('text-anchor', 'middle').text(`Peak ${f(peak.v)}`);
+      const bb = pl.node().getBBox();
+      if (bb.x + bb.width > W - mr) pl.attr('text-anchor', 'end');
+      if (bb.y < mt - 4) pl.attr('y', y(peak.v) + 18);
+    }
+    // keep the average label clear of the line's first point
+
+    // end dot + label
+    svg.append('circle').attr('cx', x(last.d)).attr('cy', y(last.v)).attr('r', 4).attr('fill', dash.colors[0]).attr('stroke', 'var(--color-panel)').attr('stroke-width', 2);
+    svg.append('text').attr('class', 'sd-end').attr('x', x(last.d) + 9).attr('y', y(last.v)).attr('dy', '0.32em').text(f(last.v));
+
+    // hover
+    const rule = svg.append('line').attr('class', 'sd-rule').attr('y1', mt - 6).attr('y2', H - mb).attr('display', 'none');
+    const hdot = svg.append('circle').attr('r', 4.5).attr('fill', dash.colors[0]).attr('stroke', 'var(--color-panel)').attr('stroke-width', 2).attr('display', 'none');
+    const bis = d3.bisector(d => d.d).center;
+    svg.append('rect').attr('x', ml).attr('y', 0).attr('width', W - ml - mr + 8).attr('height', H).attr('fill', 'transparent')
+      .on('mousemove', ev => {
+        const [px] = d3.pointer(ev);
+        const d = data[bis(data, x.invert(px))];
+        rule.attr('display', null).attr('x1', x(d.d)).attr('x2', x(d.d));
+        hdot.attr('display', null).attr('cx', x(d.d)).attr('cy', y(d.v));
+        const r = rows.find(o => o.Month === d.m);
+        trendTip.textContent = '';
+        const h = document.createElement('div'); h.className = 'sd-tip-h'; h.textContent = mLong(d.m); trendTip.appendChild(h);
+        const v = document.createElement('div'); v.className = 'sd-tip-r'; v.textContent = `${label[metric]} ${f(d.v)}`; trendTip.appendChild(v);
+        const s = document.createElement('div'); s.className = 'sd-tip-sub';
+        s.textContent = metric === 'Margin' ? `Profit ${money(r.Profit)} on ${money(r.Sales)}` : `${d.v >= avg ? '+' : '−'}${d3.format('.0%')(Math.abs(d.v / avg - 1))} vs average`;
+        trendTip.appendChild(s);
+        trendTip.style.display = 'block';
+        const cb = trendCard.getBoundingClientRect(), eb = el.getBoundingClientRect();
+        const sx = eb.width / W;
+        let tx = eb.left - cb.left + x(d.d) * sx + 14, ty = eb.top - cb.top + y(d.v) - trendTip.offsetHeight - 10;
+        if (tx + trendTip.offsetWidth > cb.width - 6) tx = eb.left - cb.left + x(d.d) * sx - trendTip.offsetWidth - 14;
+        if (ty < 4) ty = eb.top - cb.top + y(d.v) + 14;
+        trendTip.style.left = tx + 'px'; trendTip.style.top = ty + 'px';
+      })
+      .on('mouseleave', () => { rule.attr('display', 'none'); hdot.attr('display', 'none'); trendTip.style.display = 'none'; });
+    animateTrend = false;
+  }
+
+  root.querySelectorAll('#trend .sd-seg button').forEach(b => b.addEventListener('click', () => {
+    trendMetric = b.dataset.metric;
+    root.querySelectorAll('#trend .sd-seg button').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+    const m = dash.data('by_month');
+    if (m.status === 'ok' && m.data.length) { animateTrend = true; drawTrend(m.data); }
+  }));
+
+  /* ---------- Breakdown ---------- */
+  let dim = 'seg';
+  function drawList(el, rows, key, animate) {
+    el.textContent = '';
+    const max = d3.max(rows, d => d.Sales) || 1;
+    rows.forEach((d, i) => {
+      const item = document.createElement('div');
+      const top = document.createElement('div'); top.className = 'sd-item-top';
+      const n = document.createElement('span'); n.className = 'sd-item-name'; n.textContent = d[key];
+      const v = document.createElement('span'); v.className = 'sd-item-val'; v.textContent = money(d.Sales);
+      const sm = document.createElement('small'); sm.textContent = `${pct(d.Sales ? d.Profit / d.Sales : 0)} margin`; v.appendChild(sm);
+      top.append(n, v);
+      const tr = document.createElement('div'); tr.className = 'sd-track';
+      const s = document.createElement('span'); s.style.width = `${d.Sales / max * 100}%`; s.style.background = dash.colors[0]; s.style.opacity = .3;
+      const p = document.createElement('span'); p.style.width = `${Math.max(0, d.Profit) / max * 100}%`; p.style.background = dash.colors[0];
+      if (animate) { [s, p].forEach(x => { x.classList.add('sd-grow'); x.style.animationDelay = `${i * 40}ms`; }); }
+      tr.append(s, p);
+      item.append(top, tr);
+      el.appendChild(item);
+    });
+  }
+  const shown = new Set();
+  function fillLists() {
+    root.querySelectorAll('.sd-list').forEach(el => {
+      el.hidden = el.dataset.dim !== dim;
+      if (el.hidden) return;
+      const d = dash.data(el.dataset.source);
+      if (d.status === 'ok' && d.data.length) { unskel(el); const first = !shown.has(el); shown.add(el); drawList(el, d.data, el.dataset.key, first); }
+      else if (isErr(d.status)) fail(el);
+      else if (d.status === 'loading') { el.textContent = ''; el.classList.add('dash-skeleton'); }
+      else { unskel(el); el.textContent = ''; }
+    });
+  }
+  root.querySelectorAll('#breakdown .sd-seg button').forEach(b => b.addEventListener('click', () => {
+    dim = b.dataset.dim;
+    root.querySelectorAll('#breakdown .sd-seg button').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+    fillLists();
+  }));
+
+  /* ---------- Insights ---------- */
+  function fillInsights() {
+    const d = dash.data('insights');
+    root.querySelectorAll('.sd-ins').forEach(card => {
+      const id = card.dataset.id, val = card.querySelector('.sd-ins-val');
+      const row = d.status === 'ok' ? d.data.find(r => r.Id === id) : null;
+      if (row && row.Value != null) {
+        unskel(val);
+        val.textContent = id === 'best_month' ? money(row.Value)
+          : id === 'discount_gap' ? `${row.Value < 0 ? '−' : '+'}${d3.format('.1f')(Math.abs(row.Value) * 100)} pts`
+          : pct(row.Value);
+        val.classList.toggle('sd-neg', row.Value < 0);
+        card.querySelectorAll('[data-fill]').forEach(s => {
+          const k = s.dataset.fill;
+          s.textContent = k === 'Subject' ? row.Subject : row[k] == null ? '—' : pct(row[k]);
+        });
+      } else if (d.status !== 'loading') {
+        unskel(val);
+        if (isErr(d.status)) fail(val); else val.textContent = '—';
+        card.querySelectorAll('[data-fill]').forEach(s => { s.textContent = '—'; });
+      }
+    });
+  }
+
+  /* ---------- Reveal on scroll ---------- */
+  (function reveal() {
+    if (!('IntersectionObserver' in window) || !window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
+    const els = [...root.querySelectorAll('.sd-hero, .sd-block > .sd-sec, .sd-card')];
+    els.forEach(el => el.classList.add('sd-pre'));
+    const show = el => { el.classList.add('sd-in'); setTimeout(() => { el.style.transitionDelay = ''; }, 900); };
+    let seen = false;
+    try {
+      const io = new IntersectionObserver(entries => {
+        seen = true;
+        let n = 0;
+        entries.forEach(e => {
+          if (!e.isIntersecting) return;
+          e.target.style.transitionDelay = `${Math.min(n++, 6) * 60}ms`;
+          show(e.target);
+          io.unobserve(e.target);
+        });
+      }, { root: document, threshold: 0.06 });
+      els.forEach(el => io.observe(el));
+      setTimeout(() => { if (!seen) els.forEach(show); }, 1500);
+    } catch (err) {
+      els.forEach(el => el.classList.remove('sd-pre'));
+    }
+  })();
+
+  /* ---------- Shared tooltip ---------- */
+  function showTip(card, tip, ev, head, lines) {
+    tip.textContent = '';
+    const h = document.createElement('div'); h.className = 'sd-tip-h'; h.textContent = head; tip.appendChild(h);
+    for (const [color, text] of lines) {
+      const r = document.createElement('div'); r.className = 'sd-tip-r';
+      if (color) { const s = document.createElement('i'); s.className = 'sd-sw'; s.style.background = color; r.appendChild(s); }
+      r.appendChild(document.createTextNode(text));
+      tip.appendChild(r);
+    }
+    tip.style.display = 'block';
+    const cb = card.getBoundingClientRect();
+    let x = ev.clientX - cb.left + 14, y = ev.clientY - cb.top - tip.offsetHeight - 10;
+    if (x + tip.offsetWidth > cb.width - 6) x = ev.clientX - cb.left - tip.offsetWidth - 14;
+    if (x < 6) x = 6;
+    if (y < 6) y = ev.clientY - cb.top + 16;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  const wireSeg = (sel, attr, onPick) => root.querySelectorAll(`${sel} .sd-seg button`).forEach(b => b.addEventListener('click', () => {
+    root.querySelectorAll(`${sel} .sd-seg button`).forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+    onPick(b.dataset[attr]);
+  }));
+
+  /* ---------- Heatmap ---------- */
+  let hmMetric = 'Margin';
+  const heatEl = root.querySelector('.sd-heat'), heatCard = root.querySelector('#heatmap'), heatTip = heatCard.querySelector('.sd-tip');
+  function drawHeat(rows) {
+    const el = heatEl, f = fmt[hmMetric];
+    el.textContent = '';
+    const countries = [...new Set(rows.map(r => r.Country))].sort((a, b) =>
+      d3.sum(rows.filter(r => r.Country === b), r => r.Profit) - d3.sum(rows.filter(r => r.Country === a), r => r.Profit));
+    const products = [...new Set(rows.map(r => r.Product))].sort((a, b) =>
+      d3.sum(rows.filter(r => r.Product === b), r => r.Profit) - d3.sum(rows.filter(r => r.Product === a), r => r.Profit));
+    const W = Math.max(el.clientWidth, 280), cellH = 42, top = 26;
+    const H = top + countries.length * cellH;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
+    const short = { 'United States of America': 'USA' };
+    const cName = c => short[c] || c;
+    const ml = Math.ceil(measure(svg, countries.map(cName))) + 12;
+    const x = d3.scaleBand(products, [ml, W]).paddingInner(0.06);
+    const y = d3.scaleBand(countries, [top, H]).paddingInner(0.1);
+    const fullW = measure(svg, products);
+    const pName = p => fullW + 6 > x.bandwidth() ? p.slice(0, 3) : p;
+    svg.append('g').selectAll('text').data(products).join('text').attr('class', 'sd-head-t')
+      .attr('x', d => x(d) + x.bandwidth() / 2).attr('y', top - 10).attr('text-anchor', 'middle').text(pName);
+    svg.append('g').selectAll('text').data(countries).join('text').attr('class', 'sd-head-t')
+      .attr('x', ml - 12).attr('y', d => y(d) + y.bandwidth() / 2).attr('dy', '0.32em').attr('text-anchor', 'end').text(cName);
+    const vals = rows.map(r => r[hmMetric]);
+    const vmax = d3.max(vals), vmin = d3.min(vals);
+    const lo = Math.min(0, vmin) < 0 ? 0 : vmin;
+    const op = v => v < 0 ? 0.25 + 0.6 * (vmin < 0 ? v / vmin : 0) : 0.1 + 0.9 * ((v - lo) / ((vmax - lo) || 1));
+    const showText = x.bandwidth() > measure(svg, ['-00.0%']) + 6;
+    const g = svg.append('g').selectAll('g').data(rows).join('g');
+    g.append('rect').attr('x', d => x(d.Product)).attr('y', d => y(d.Country))
+      .attr('width', x.bandwidth()).attr('height', y.bandwidth()).attr('rx', 6)
+      .attr('fill', d => d[hmMetric] < 0 ? 'var(--cds-chart-status-critical)' : dash.colors[0])
+      .attr('fill-opacity', d => op(d[hmMetric]))
+      .attr('stroke', 'var(--color-panel)').attr('stroke-width', 0)
+      .on('mousemove', function (ev, d) {
+        d3.select(this).attr('stroke', 'var(--color-fg)').attr('stroke-width', 1.5);
+        showTip(heatCard, heatTip, ev, `${d.Country} · ${d.Product}`, [[null, `Sales ${money(d.Sales)}`], [null, `Profit ${money(d.Profit)}`], [null, `Margin ${pct(d.Margin)}`]]);
+      })
+      .on('mouseleave', function () { d3.select(this).attr('stroke-width', 0); heatTip.style.display = 'none'; });
+    if (showText) g.append('text').attr('class', 'sd-cell-t')
+      .attr('x', d => x(d.Product) + x.bandwidth() / 2).attr('y', d => y(d.Country) + y.bandwidth() / 2).attr('dy', '0.32em').attr('text-anchor', 'middle')
+      .attr('style', d => `fill:${op(d[hmMetric]) > 0.55 ? 'var(--color-panel)' : 'var(--color-fg)'}`)
+      .text(d => f(d[hmMetric]));
+    el.style.minHeight = H + 'px';
+    const bar = heatCard.querySelector('.sd-scale-bar');
+    bar.style.background = `linear-gradient(90deg, color-mix(in srgb, ${dash.colors[0]} 10%, transparent), ${dash.colors[0]})`;
+    heatCard.querySelector('.sd-scale-lo').textContent = f(vmin);
+    heatCard.querySelector('.sd-scale-hi').textContent = f(vmax);
+  }
+  function fillHeat() {
+    const d = dash.data('country_product');
+    if (d.status === 'ok' && d.data.length) { unskel(heatEl); drawHeat(d.data); }
+    else if (isErr(d.status)) fail(heatEl);
+    else if (d.status === 'loading') { heatEl.textContent = ''; heatEl.classList.add('dash-skeleton'); }
+    else { unskel(heatEl); heatEl.textContent = ''; }
+  }
+  wireSeg('#heatmap', 'hm', v => { hmMetric = v; fillHeat(); });
+
+  /* ---------- Year over year ---------- */
+  let yyMetric = 'Sales';
+  const yoyEl = root.querySelector('.sd-yoy'), yoyCard = root.querySelector('#yoy'), yoyTip = yoyCard.querySelector('.sd-tip');
+  function drawYoy(rows, animate) {
+    const el = yoyEl, m = yyMetric, f = m === 'Units' ? (v => compact.format(v)) : money;
+    el.textContent = '';
+    const W = Math.max(el.clientWidth, 260), H = 260, mt = 26, mb = 26;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
+    const vmax = d3.max(rows, r => Math.max(r[`${m}_Cur`], r[`${m}_Prior`])) || 1;
+    const y = d3.scaleLinear([0, vmax], [H - mb, mt]).nice(4);
+    const ticks = y.ticks(4);
+    const ml = Math.ceil(measure(svg, ticks.map(f))) + 12;
+    const x = d3.scaleBand(rows.map(r => r.Month), [ml, W]).padding(0.28);
+    const keys = ['Prior', 'Cur'];
+    const xi = d3.scaleBand(keys, [0, x.bandwidth()]).padding(0.12);
+    const bw = Math.min(32, xi.bandwidth()), off = (xi.bandwidth() - bw) / 2;
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('class', 'sd-gl')
+      .attr('x1', ml).attr('x2', W).attr('y1', d => y(d)).attr('y2', d => y(d));
+    svg.append('g').selectAll('text').data(ticks).join('text')
+      .attr('x', ml - 12).attr('y', d => y(d)).attr('dy', '0.32em').attr('text-anchor', 'end').text(f);
+    svg.append('g').selectAll('text').data(rows).join('text')
+      .attr('x', d => x(d.Month) + x.bandwidth() / 2).attr('y', H - mb + 18).attr('text-anchor', 'middle').text(d => String(d.Month).slice(0, 3));
+    const grp = svg.append('g').selectAll('g').data(rows).join('g').attr('transform', d => `translate(${x(d.Month)},0)`);
+    keys.forEach(k => {
+      grp.append('rect').attr('class', `sd-yb sd-yb-${k}`)
+        .attr('x', xi(k) + off).attr('width', bw).attr('rx', 4)
+        .attr('y', d => y(d[`${m}_${k}`])).attr('height', d => y(0) - y(d[`${m}_${k}`]))
+        .attr('fill', k === 'Cur' ? dash.colors[0] : 'var(--cds-chart-muted)')
+        .style('transform-origin', `0 ${y(0)}px`)
+        .attr('class', animate ? 'sd-rise' : null);
+    });
+    grp.append('text').attr('class', 'sd-chg').attr('text-anchor', 'middle')
+      .attr('x', x.bandwidth() / 2)
+      .attr('y', d => y(Math.max(d[`${m}_Cur`], d[`${m}_Prior`])) - 8)
+      .attr('style', d => `fill:${d[`${m}_Cur`] >= d[`${m}_Prior`] ? 'var(--color-ok)' : 'var(--color-bad)'}`)
+      .text(d => { const p = d[`${m}_Prior`]; if (!p) return ''; const c = d[`${m}_Cur`] / p - 1; return `${c >= 0 ? '+' : '−'}${d3.format('.0%')(Math.abs(c))}`; });
+    grp.append('rect').attr('x', 0).attr('y', 0).attr('width', x.bandwidth()).attr('height', H).attr('fill', 'transparent')
+      .on('mousemove', (ev, d) => {
+        grp.selectAll('rect').attr('opacity', null);
+        grp.filter(o => o !== d).selectAll('rect').attr('opacity', 0.45);
+        showTip(yoyCard, yoyTip, ev, d.Month, [['var(--cds-chart-muted)', `${d.PriorYear}  ${f(d[`${m}_Prior`])}`], [dash.colors[0], `${d.Year}  ${f(d[`${m}_Cur`])}`]]);
+      })
+      .on('mouseleave', () => { grp.selectAll('rect').attr('opacity', null); yoyTip.style.display = 'none'; });
+    const lg = yoyCard.querySelector('.sd-yoy-legend');
+    lg.textContent = '';
+    [[rows[0].PriorYear, 'var(--cds-chart-muted)'], [rows[0].Year, dash.colors[0]]].forEach(([yr, c]) => {
+      const s = document.createElement('span'); const i = document.createElement('i'); i.className = 'sd-sw'; i.style.background = c;
+      s.append(i, document.createTextNode(String(yr))); lg.appendChild(s);
+    });
+  }
+  let yoyShown = false;
+  function fillYoy(animate) {
+    const d = dash.data('yoy_months');
+    if (d.status === 'ok' && d.data.length) { unskel(yoyEl); drawYoy(d.data, animate || !yoyShown); yoyShown = true; }
+    else if (isErr(d.status)) fail(yoyEl);
+    else if (d.status === 'loading') { yoyEl.textContent = ''; yoyEl.classList.add('dash-skeleton'); }
+    else { unskel(yoyEl); yoyEl.textContent = ''; }
+  }
+  wireSeg('#yoy', 'yy', v => { yyMetric = v; fillYoy(true); });
+
+  /* ---------- Table ---------- */
+  const tbox = root.querySelector('.sd-tablebox');
+  const table = root.querySelector('.sd-table');
+  const thead = table.querySelector('thead tr'), tbody = table.querySelector('tbody');
+  const search = root.querySelector('.sd-search'), countEl = root.querySelector('.sd-count');
+  let tRows = [], tCols = [], numCols = new Set(), sortCol = 'Row', sortDir = 1;
+
+  function renderTable() {
+    const q = search.value.trim().toLowerCase();
+    const rows = q ? tRows.filter(r => tCols.some(c => String(r[c] ?? '').toLowerCase().includes(q))) : tRows.slice();
+    const isNum = numCols.has(sortCol);
+    rows.sort((a, b) => {
+      const va = isNum ? Number(a[sortCol]) : String(a[sortCol] ?? ''), vb = isNum ? Number(b[sortCol]) : String(b[sortCol] ?? '');
+      return (va < vb ? -1 : va > vb ? 1 : 0) * sortDir;
+    });
+    thead.querySelectorAll('th').forEach(th => th.setAttribute('aria-sort', th.dataset.field === sortCol ? (sortDir > 0 ? 'ascending' : 'descending') : 'none'));
+    tbody.textContent = '';
+    const frag = document.createDocumentFragment();
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      for (const c of tCols) {
+        const td = document.createElement('td');
+        const v = r[c];
+        if (c === 'Row') td.textContent = String(v);
+        else if (numCols.has(c)) {
+          td.className = 'sd-num';
+          const n = Number(v);
+          td.textContent = v === '' || v == null ? '' : MONEY_COLS.has(c) ? money0(n) : PLAIN_COLS.has(c) ? String(n) : numFmt(n);
+          if (n < 0) td.classList.add('sd-neg');
+        }
+        else td.textContent = v == null ? '' : String(v);
+        tr.appendChild(td);
+      }
+      frag.appendChild(tr);
+    }
+    tbody.appendChild(frag);
+    countEl.textContent = q ? `${d3.format(',')(rows.length)} of ${d3.format(',')(tRows.length)}` : `${d3.format(',')(tRows.length)} rows`;
+  }
+
+  function buildTable(rows) {
+    tRows = rows;
+    tCols = Object.keys(rows[0] || {});
+    numCols = new Set(tCols.filter(c => c !== 'Row' && rows.every(r => r[c] === '' || r[c] == null || !isNaN(Number(r[c])))));
+    numCols.add('Row');
+    if (!tCols.includes(sortCol)) { sortCol = 'Row'; sortDir = 1; }
+    thead.textContent = '';
+    for (const c of tCols) {
+      const th = document.createElement('th');
+      th.dataset.field = c;
+      if (numCols.has(c) && c !== 'Row') th.className = 'sd-num';
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = c === 'Row' ? '#' : c.replace(/_/g, ' ');
+      b.addEventListener('click', () => { if (sortCol === c) sortDir = -sortDir; else { sortCol = c; sortDir = numCols.has(c) && c !== 'Row' ? -1 : 1; } renderTable(); });
+      th.appendChild(b);
+      thead.appendChild(th);
+    }
+    renderTable();
+  }
+  search.addEventListener('input', renderTable);
+
+  /* ---------- Draw ---------- */
+  dash.onData(() => {
+    const kpi = dash.data('kpi'), seg = dash.data('by_segment'), mo = dash.data('by_month');
+    const months = mo.status === 'ok' ? mo.data : [];
+
+    // window label, e.g. "Sep – Dec 2014"
+    const k0 = kpi.status === 'ok' && kpi.data.length ? kpi.data[0] : null;
+    root.querySelectorAll('.sd-w-from').forEach(el => { el.textContent = k0 ? mMon(k0.CurFrom) : '—'; });
+    root.querySelectorAll('.sd-w-to').forEach(el => { el.textContent = k0 ? `${mMon(k0.CurTo)} ${mYear(k0.CurTo)}` : '—'; });
+
+    // takeaway
+    const sales = k0 ? kpi.data.find(r => r.Metric === 'Sales') : null;
+    const cur = root.querySelector('.sd-t-cur'), chg = root.querySelector('.sd-t-chg'), ts = root.querySelector('.sd-t-topseg');
+    if (sales) {
+      [cur, chg].forEach(unskel);
+      cur.textContent = money(sales.Current);
+      chg.textContent = sales.Change == null ? 'with no earlier months to compare' : `${sales.Change >= 0 ? 'up' : 'down'} ${pct(Math.abs(sales.Change))}`;
+    } else if (kpi.status !== 'loading') { [cur, chg].forEach(unskel); cur.textContent = '—'; chg.textContent = '—'; }
+    if (seg.status === 'ok' && seg.data.length) { unskel(ts); ts.textContent = seg.data[0].Segment; }
+    else if (seg.status !== 'loading') { unskel(ts); ts.textContent = '—'; }
+
+    fillKpis(kpi, months);
+    fillInsights();
+
+    // trend
+    if (months.length) { unskel(trendEl); drawTrend(months); }
+    else if (isErr(mo.status)) fail(trendEl);
+    else if (mo.status === 'loading') { trendEl.textContent = ''; trendEl.classList.add('dash-skeleton'); }
+    else { unskel(trendEl); trendEl.textContent = ''; }
+
+    fillLists();
+    fillHeat();
+    fillYoy(false);
+
+    // table
+    const t = dash.data('table_rows');
+    if (t.status === 'ok') {
+      unskel(tbox);
+      const f = tbox.querySelector('.sd-fail'); if (f) f.remove();
+      table.style.display = '';
+      if (t.data !== tRows) buildTable(t.data);
+    } else if (isErr(t.status)) {
+      table.style.display = 'none';
+      if (!tbox.querySelector('.sd-fail')) { unskel(tbox); const f = document.createElement('div'); f.className = 'sd-fail'; f.textContent = 'Failed to load'; tbox.appendChild(f); }
+    }
+  });
+})();
+</script>

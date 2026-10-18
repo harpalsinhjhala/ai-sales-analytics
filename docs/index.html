@@ -1,0 +1,2001 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI-Powered Sales Analytics · HarpalSinh Jhala</title>
+<meta name="description" content="An AI-powered sales analytics dashboard built end to end on a Microsoft Fabric lakehouse by HarpalSinh Jhala.">
+<meta name="author" content="HarpalSinh Jhala">
+<meta property="og:title" content="AI-Powered Sales Analytics · HarpalSinh Jhala">
+<meta property="og:description" content="Microsoft Fabric lakehouse to interactive dashboard, built with AI-assisted analytics engineering.">
+<script>try { var t = localStorage.getItem('sd-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111'/%3E%3Cpath d='M8 22l5-6 4 3 7-9' fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<style>
+:root {
+  color-scheme: light;
+  --font-anthropic-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-anthropic-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --color-bg: #f7f7f5; --color-panel: #ffffff; --color-fg: #18181b; --color-fg-muted: #71717a;
+  --color-border-line: #e7e7e4; --color-ok: #15803d; --color-warn: #b45309; --color-bad: #c2410c;
+  --series-1: #4f5bd5;
+  --cds-chart-grid: #ececea; --cds-chart-axis: #a1a1aa; --cds-chart-reference: #a1a1aa; --cds-chart-muted: #c9c9c6; --cds-chart-status-critical: #dc2626;
+  --cds-surface-popover: #ffffff; --cds-border: #e4e4e7; --cds-shadow-popover: 0 8px 24px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
+  --cds-text-secondary: #71717a;
+  --cds-font-size-caption: 12px; --cds-font-size-body: 14px; --cds-font-size-heading: 15px; --cds-font-size-title: 30px;
+  --cds-font-weight-medium: 500;
+  --cds-gap-xs: 4px; --cds-gap-sm: 8px; --cds-gap-md: 14px; --cds-gap-lg: 20px; --cds-gap-xl: 32px;
+  --cds-pad-xs: 6px; --cds-pad-sm: 10px; --cds-pad-md: 14px; --cds-pad-lg: 20px; --cds-pad-xl: 28px;
+  --cds-radius: 12px; --cds-dur-slow: 220ms; --cds-ease-out: cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-bg: #0f0f11; --color-panel: #17171a; --color-fg: #f4f4f5; --color-fg-muted: #a1a1aa;
+    --color-border-line: #26262b; --color-ok: #4ade80; --color-warn: #fbbf24; --color-bad: #fb923c;
+    --series-1: #8b94ff;
+    --cds-chart-grid: #232328; --cds-chart-axis: #52525b; --cds-chart-reference: #63636b; --cds-chart-muted: #3f3f46; --cds-chart-status-critical: #f87171;
+    --cds-surface-popover: #1d1d21; --cds-border: #2e2e34; --cds-shadow-popover: 0 8px 24px rgba(0,0,0,.4);
+    --cds-text-secondary: #a1a1aa;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #0f0f11; --color-panel: #17171a; --color-fg: #f4f4f5; --color-fg-muted: #a1a1aa;
+  --color-border-line: #26262b; --color-ok: #4ade80; --color-warn: #fbbf24; --color-bad: #fb923c;
+  --series-1: #8b94ff;
+  --cds-chart-grid: #232328; --cds-chart-axis: #52525b; --cds-chart-reference: #63636b; --cds-chart-muted: #3f3f46; --cds-chart-status-critical: #f87171;
+  --cds-surface-popover: #1d1d21; --cds-border: #2e2e34; --cds-shadow-popover: 0 8px 24px rgba(0,0,0,.4);
+  --cds-text-secondary: #a1a1aa;
+}
+@media (max-width: 600px) { :root { --cds-font-size-title: 26px; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--color-bg); color: var(--color-fg); font-family: var(--font-anthropic-sans); -webkit-font-smoothing: antialiased; }
+#dash-root { padding: clamp(16px, 4vw, 48px) clamp(16px, 4vw, 40px) 40px; }
+.dash-skeleton { color: transparent !important; position: relative; }
+.dash-skeleton::after { content: ""; position: absolute; inset: 20% 0; max-width: 6rem; border-radius: 6px; background: var(--cds-chart-grid); }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* Top bar */
+.tb { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--color-bg) 78%, transparent);
+  -webkit-backdrop-filter: saturate(160%) blur(14px); backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border-line) 85%, transparent); }
+.tb-in { max-width: calc(1240px + 2 * clamp(16px, 4vw, 40px)); margin: 0 auto; padding: 10px clamp(16px, 4vw, 40px); display: flex; align-items: center; gap: 16px; }
+.tb-brand { display: flex; align-items: center; gap: 10px; color: var(--color-fg); text-decoration: none; font-size: 14px; font-weight: 500; white-space: nowrap; }
+.tb-mark { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; letter-spacing: .03em; color: var(--color-panel);
+  background: linear-gradient(135deg, var(--series-1), color-mix(in srgb, var(--series-1) 45%, var(--color-fg))); }
+.tb-nav { margin-left: auto; display: flex; gap: 2px; }
+.tb-nav a { font-size: 13px; color: var(--color-fg-muted); text-decoration: none; padding: 6px 11px; border-radius: 999px; transition: background var(--cds-dur-slow), color var(--cds-dur-slow); }
+.tb-nav a:hover { color: var(--color-fg); background: color-mix(in srgb, var(--color-fg) 6%, transparent); }
+.tb-nav a.on { color: var(--color-fg); background: color-mix(in srgb, var(--color-fg) 8%, transparent); }
+.tb-theme { all: unset; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--color-fg); border: 1px solid var(--color-border-line); flex: none; transition: background var(--cds-dur-slow); }
+.tb-theme:hover { background: color-mix(in srgb, var(--color-fg) 6%, transparent); }
+.tb-theme:focus-visible { outline: 2px solid var(--color-fg-muted); outline-offset: 2px; }
+.tb-theme svg { width: 16px; height: 16px; }
+@media (max-width: 760px) { .tb-nav { display: none; } .tb-theme { margin-left: auto; } }
+</style>
+</head>
+<body>
+<script type="text/csv" id="sd-data">Segment,Country,Product,Discount_Band,Units_Sold,Manufacturing_Price,Sale_Price,Gross_Sales,Discounts,Sales,COGS,Profit,Date,Month_Number,Month_Name,Year
+Government,Germany,Carretera,None,1513.0,3,350,529550.0,0.0,529550.0,393380.0,136170.0,1-Dec-14,12,December,2014
+Government,Germany,Paseo,None,1006.0,10,350,352100.0,0.0,352100.0,261560.0,90540.0,1-Jun-14,6,June,2014
+Government,Canada,Paseo,None,1725.0,10,350,603750.0,0.0,603750.0,448500.0,155250.0,1-Nov-13,11,November,2013
+Government,Germany,Paseo,None,1513.0,10,350,529550.0,0.0,529550.0,393380.0,136170.0,1-Dec-14,12,December,2014
+Government,Germany,Velo,None,1006.0,120,350,352100.0,0.0,352100.0,261560.0,90540.0,1-Jun-14,6,June,2014
+Government,France,VTT,None,1527.0,250,350,534450.0,0.0,534450.0,397020.0,137430.0,1-Sep-13,9,September,2013
+Government,France,Amarilla,None,2750.0,260,350,962500.0,0.0,962500.0,715000.0,247500.0,1-Feb-14,2,February,2014
+Government,Mexico,Carretera,Low,1210.0,3,350,423500.0,4235.0,419265.0,314600.0,104665.0,1-Mar-14,3,March,2014
+Government,Mexico,Carretera,Low,1397.0,3,350,488950.0,4889.5,484060.5,363220.0,120840.5,1-Oct-14,10,October,2014
+Government,France,Carretera,Low,2155.0,3,350,754250.0,7542.5,746707.5,560300.0,186407.5,1-Dec-14,12,December,2014
+Government,France,Paseo,Low,2155.0,10,350,754250.0,7542.5,746707.5,560300.0,186407.5,1-Dec-14,12,December,2014
+Government,Canada,VTT,Low,943.5,250,350,330225.0,3302.25,326922.75,245310.0,81612.75,1-Apr-14,4,April,2014
+Government,Mexico,VTT,Low,1397.0,250,350,488950.0,4889.5,484060.5,363220.0,120840.5,1-Oct-14,10,October,2014
+Government,Canada,Carretera,Low,2852.0,3,350,998200.0,19964.0,978236.0,741520.0,236716.0,1-Dec-14,12,December,2014
+Government,Canada,Paseo,Low,2852.0,10,350,998200.0,19964.0,978236.0,741520.0,236716.0,1-Dec-14,12,December,2014
+Government,Germany,Velo,Low,2966.0,120,350,1038100.0,20762.0,1017338.0,771160.0,246178.0,1-Oct-13,10,October,2013
+Government,Germany,Velo,Low,2877.0,120,350,1006950.0,20139.0,986811.0,748020.0,238791.0,1-Oct-14,10,October,2014
+Government,Germany,VTT,Low,2877.0,250,350,1006950.0,20139.0,986811.0,748020.0,238791.0,1-Oct-14,10,October,2014
+Government,United States of America,VTT,Low,266.0,250,350,93100.0,1862.0,91238.0,69160.0,22078.0,1-Dec-13,12,December,2013
+Government,Mexico,VTT,Low,1940.0,250,350,679000.0,13580.0,665420.0,504400.0,161020.0,1-Dec-13,12,December,2013
+Government,Germany,Amarilla,Low,2966.0,260,350,1038100.0,20762.0,1017338.0,771160.0,246178.0,1-Oct-13,10,October,2013
+Government,Germany,Montana,Low,1797.0,5,350,628950.0,18868.5,610081.5,467220.0,142861.5,1-Sep-13,9,September,2013
+Government,Mexico,VTT,Low,1642.0,250,350,574700.0,17241.0,557459.0,426920.0,130539.0,1-Aug-14,8,August,2014
+Government,United States of America,Carretera,Low,274.0,3,350,95900.0,3836.0,92064.0,71240.0,20824.0,1-Dec-14,12,December,2014
+Government,United States of America,Paseo,Low,3450.0,10,350,1207500.0,48300.0,1159200.0,897000.0,262200.0,1-Jul-14,7,July,2014
+Government,United States of America,Paseo,Low,274.0,10,350,95900.0,3836.0,92064.0,71240.0,20824.0,1-Dec-14,12,December,2014
+Government,France,Velo,Low,2177.0,120,350,761950.0,30478.0,731472.0,566020.0,165452.0,1-Oct-14,10,October,2014
+Government,United States of America,VTT,Low,349.0,250,350,122150.0,4886.0,117264.0,90740.0,26524.0,1-Sep-13,9,September,2013
+Government,France,VTT,Low,2177.0,250,350,761950.0,30478.0,731472.0,566020.0,165452.0,1-Oct-14,10,October,2014
+Government,Mexico,Amarilla,Low,1865.0,260,350,652750.0,26110.0,626640.0,484900.0,141740.0,1-Feb-14,2,February,2014
+Government,Germany,Amarilla,Low,1907.0,260,350,667450.0,26698.0,640752.0,495820.0,144932.0,1-Sep-14,9,September,2014
+Government,Canada,Amarilla,Low,1778.0,260,350,622300.0,24892.0,597408.0,462280.0,135128.0,1-Dec-13,12,December,2013
+Government,France,Montana,Medium,1384.5,5,350,484575.0,24228.75,460346.25,359970.0,100376.25,1-Jan-14,1,January,2014
+Government,Mexico,Montana,Medium,720.0,5,350,252000.0,12600.0,239400.0,187200.0,52200.0,1-Sep-13,9,September,2013
+Government,United States of America,Paseo,Medium,602.0,10,350,210700.0,10535.0,200165.0,156520.0,43645.0,1-Jun-14,6,June,2014
+Government,Canada,Paseo,Medium,1228.0,10,350,429800.0,21490.0,408310.0,319280.0,89030.0,1-Oct-13,10,October,2013
+Government,United States of America,Velo,Medium,602.0,120,350,210700.0,10535.0,200165.0,156520.0,43645.0,1-Jun-14,6,June,2014
+Government,Germany,Amarilla,Medium,1350.0,260,350,472500.0,23625.0,448875.0,351000.0,97875.0,1-Feb-14,2,February,2014
+Government,Canada,Amarilla,Medium,552.0,260,350,193200.0,9660.0,183540.0,143520.0,40020.0,1-Aug-14,8,August,2014
+Government,Canada,Amarilla,Medium,1228.0,260,350,429800.0,21490.0,408310.0,319280.0,89030.0,1-Oct-13,10,October,2013
+Government,Mexico,Montana,Medium,980.0,5,350,343000.0,20580.0,322420.0,254800.0,67620.0,1-Apr-14,4,April,2014
+Government,Germany,Montana,Medium,1460.0,5,350,511000.0,30660.0,480340.0,379600.0,100740.0,1-May-14,5,May,2014
+Government,France,Paseo,Medium,1496.0,10,350,523600.0,31416.0,492184.0,388960.0,103224.0,1-Jun-14,6,June,2014
+Government,United States of America,Paseo,Medium,727.0,10,350,254450.0,15267.0,239183.0,189020.0,50163.0,1-Oct-13,10,October,2013
+Government,France,Velo,Medium,1496.0,120,350,523600.0,31416.0,492184.0,388960.0,103224.0,1-Jun-14,6,June,2014
+Government,France,Velo,Medium,2076.0,120,350,726600.0,43596.0,683004.0,539760.0,143244.0,1-Oct-13,10,October,2013
+Government,Mexico,Amarilla,Medium,1679.0,260,350,587650.0,35259.0,552391.0,436540.0,115851.0,1-Sep-14,9,September,2014
+Government,United States of America,Amarilla,Medium,727.0,260,350,254450.0,15267.0,239183.0,189020.0,50163.0,1-Oct-13,10,October,2013
+Government,France,Amarilla,Medium,2076.0,260,350,726600.0,43596.0,683004.0,539760.0,143244.0,1-Oct-13,10,October,2013
+Government,United States of America,Carretera,Medium,1761.0,3,350,616350.0,43144.5,573205.5,457860.0,115345.5,1-Mar-14,3,March,2014
+Government,France,Amarilla,Medium,2876.0,260,350,1006600.0,70462.0,936138.0,747760.0,188378.0,1-Sep-14,9,September,2014
+Government,Mexico,Carretera,Medium,1362.0,3,350,476700.0,38136.0,438564.0,354120.0,84444.0,1-Dec-14,12,December,2014
+Government,Germany,Paseo,Medium,2146.0,10,350,751100.0,60088.0,691012.0,557960.0,133052.0,1-Nov-13,11,November,2013
+Government,Mexico,Paseo,Medium,1362.0,10,350,476700.0,38136.0,438564.0,354120.0,84444.0,1-Dec-14,12,December,2014
+Government,France,VTT,Medium,574.5,250,350,201075.0,16086.0,184989.0,149370.0,35619.0,1-Apr-14,4,April,2014
+Government,France,VTT,Medium,381.0,250,350,133350.0,10668.0,122682.0,99060.0,23622.0,1-Aug-14,8,August,2014
+Government,Germany,VTT,Medium,422.0,250,350,147700.0,11816.0,135884.0,109720.0,26164.0,1-Aug-14,8,August,2014
+Government,France,Montana,Medium,1666.0,5,350,583100.0,52479.0,530621.0,433160.0,97461.0,1-May-14,5,May,2014
+Government,Mexico,Paseo,Medium,2417.0,10,350,845950.0,76135.5,769814.5,628420.0,141394.5,1-Jan-14,1,January,2014
+Government,Germany,Velo,Medium,1307.0,120,350,457450.0,41170.5,416279.5,339820.0,76459.5,1-Jul-14,7,July,2014
+Government,Canada,Velo,Medium,1269.0,120,350,444150.0,39973.5,404176.5,329940.0,74236.5,1-Oct-14,10,October,2014
+Government,United States of America,VTT,Medium,1351.5,250,350,473025.0,42572.25,430452.75,351390.0,79062.75,1-Apr-14,4,April,2014
+Government,United States of America,Amarilla,Medium,2071.0,260,350,724850.0,65236.5,659613.5,538460.0,121153.5,1-Sep-14,9,September,2014
+Government,Canada,Amarilla,Medium,1269.0,260,350,444150.0,39973.5,404176.5,329940.0,74236.5,1-Oct-14,10,October,2014
+Government,United States of America,Montana,High,2313.0,5,350,809550.0,80955.0,728595.0,601380.0,127215.0,1-May-14,5,May,2014
+Government,France,Velo,High,639.0,120,350,223650.0,22365.0,201285.0,166140.0,35145.0,1-Jul-14,7,July,2014
+Government,United States of America,VTT,High,2807.0,250,350,982450.0,98245.0,884205.0,729820.0,154385.0,1-Aug-14,8,August,2014
+Government,Germany,VTT,High,1870.0,250,350,654500.0,65450.0,589050.0,486200.0,102850.0,1-Dec-13,12,December,2013
+Government,Canada,Amarilla,High,2240.0,260,350,784000.0,78400.0,705600.0,582400.0,123200.0,1-Feb-14,2,February,2014
+Government,Canada,Amarilla,High,707.0,260,350,247450.0,24745.0,222705.0,183820.0,38885.0,1-Sep-14,9,September,2014
+Government,Germany,Carretera,High,792.0,3,350,277200.0,30492.0,246708.0,205920.0,40788.0,1-Mar-14,3,March,2014
+Government,Germany,Montana,High,766.0,5,350,268100.0,29491.0,238609.0,199160.0,39449.0,1-Jan-14,1,January,2014
+Government,Canada,Paseo,High,2104.5,10,350,736575.0,81023.25,655551.75,547170.0,108381.75,1-Jul-14,7,July,2014
+Government,Mexico,Velo,High,344.0,120,350,120400.0,13244.0,107156.0,89440.0,17716.0,1-Oct-13,10,October,2013
+Government,Mexico,Amarilla,High,344.0,260,350,120400.0,13244.0,107156.0,89440.0,17716.0,1-Oct-13,10,October,2013
+Government,Mexico,Carretera,High,886.0,3,350,310100.0,37212.0,272888.0,230360.0,42528.0,1-Jun-14,6,June,2014
+Government,Mexico,Paseo,High,886.0,10,350,310100.0,37212.0,272888.0,230360.0,42528.0,1-Jun-14,6,June,2014
+Government,France,Paseo,High,1594.0,10,350,557900.0,66948.0,490952.0,414440.0,76512.0,1-Nov-14,11,November,2014
+Government,Mexico,Paseo,High,1197.0,10,350,418950.0,50274.0,368676.0,311220.0,57456.0,1-Nov-14,11,November,2014
+Government,Mexico,Velo,High,1395.0,120,350,488250.0,58590.0,429660.0,362700.0,66960.0,1-Jul-14,7,July,2014
+Government,United States of America,Velo,High,986.0,120,350,345100.0,41412.0,303688.0,256360.0,47328.0,1-Oct-14,10,October,2014
+Government,Canada,VTT,High,623.0,250,350,218050.0,26166.0,191884.0,161980.0,29904.0,1-Sep-13,9,September,2013
+Government,United States of America,VTT,High,986.0,250,350,345100.0,41412.0,303688.0,256360.0,47328.0,1-Oct-14,10,October,2014
+Government,United States of America,Amarilla,High,270.0,260,350,94500.0,11340.0,83160.0,70200.0,12960.0,1-Feb-14,2,February,2014
+Government,Canada,Carretera,High,923.0,3,350,323050.0,41996.5,281053.5,239980.0,41073.5,1-Mar-14,3,March,2014
+Government,France,Carretera,High,1790.0,3,350,626500.0,81445.0,545055.0,465400.0,79655.0,1-Mar-14,3,March,2014
+Government,United States of America,Montana,High,982.5,5,350,343875.0,44703.75,299171.25,255450.0,43721.25,1-Jan-14,1,January,2014
+Government,Canada,Paseo,High,2632.0,10,350,921200.0,119756.0,801444.0,684320.0,117124.0,1-Jun-14,6,June,2014
+Government,Germany,Paseo,High,357.0,10,350,124950.0,16243.5,108706.5,92820.0,15886.5,1-Nov-14,11,November,2014
+Government,Canada,Velo,High,2632.0,120,350,921200.0,119756.0,801444.0,684320.0,117124.0,1-Jun-14,6,June,2014
+Government,Canada,Montana,High,2227.5,5,350,779625.0,109147.5,670477.5,579150.0,91327.5,1-Jan-14,1,January,2014
+Government,Germany,Montana,High,1199.0,5,350,419650.0,58751.0,360899.0,311740.0,49159.0,1-Apr-14,4,April,2014
+Government,Canada,Montana,High,200.0,5,350,70000.0,9800.0,60200.0,52000.0,8200.0,1-May-14,5,May,2014
+Government,Canada,Paseo,High,700.0,10,350,245000.0,34300.0,210700.0,182000.0,28700.0,1-Nov-14,11,November,2014
+Government,United States of America,Paseo,High,1177.0,10,350,411950.0,57673.0,354277.0,306020.0,48257.0,1-Nov-14,11,November,2014
+Government,France,Paseo,High,1922.0,10,350,672700.0,94178.0,578522.0,499720.0,78802.0,1-Nov-13,11,November,2013
+Government,France,VTT,High,1281.0,250,350,448350.0,62769.0,385581.0,333060.0,52521.0,1-Dec-13,12,December,2013
+Government,Mexico,Paseo,High,2851.0,10,350,997850.0,149677.5,848172.5,741260.0,106912.5,1-May-14,5,May,2014
+Government,United States of America,Paseo,High,2007.0,10,350,702450.0,105367.5,597082.5,521820.0,75262.5,1-Nov-13,11,November,2013
+Government,Mexico,Paseo,High,2151.0,10,350,752850.0,112927.5,639922.5,559260.0,80662.5,1-Nov-13,11,November,2013
+Government,Canada,Carretera,None,1618.5,3,20,32370.0,0.0,32370.0,16185.0,16185.0,1-Jan-14,1,January,2014
+Government,Germany,Carretera,None,1321.0,3,20,26420.0,0.0,26420.0,13210.0,13210.0,1-Jan-14,1,January,2014
+Government,France,Montana,None,1899.0,5,20,37980.0,0.0,37980.0,18990.0,18990.0,1-Jun-14,6,June,2014
+Government,Canada,Paseo,None,292.0,10,20,5840.0,0.0,5840.0,2920.0,2920.0,1-Feb-14,2,February,2014
+Government,Canada,Paseo,None,1817.0,10,20,36340.0,0.0,36340.0,18170.0,18170.0,1-Dec-14,12,December,2014
+Government,Canada,VTT,None,1817.0,250,20,36340.0,0.0,36340.0,18170.0,18170.0,1-Dec-14,12,December,2014
+Government,France,Amarilla,None,1899.0,260,20,37980.0,0.0,37980.0,18990.0,18990.0,1-Jun-14,6,June,2014
+Government,France,Montana,Low,1375.5,5,20,27510.0,275.1,27234.9,13755.0,13479.9,1-Jul-14,7,July,2014
+Government,France,Velo,Low,3864.0,120,20,77280.0,772.8,76507.2,38640.0,37867.2,1-Apr-14,4,April,2014
+Government,United States of America,Montana,Low,1566.0,5,20,31320.0,626.4,30693.6,15660.0,15033.6,1-Oct-14,10,October,2014
+Government,United States of America,Velo,Low,1566.0,120,20,31320.0,626.4,30693.6,15660.0,15033.6,1-Oct-14,10,October,2014
+Government,Mexico,Velo,Low,544.0,120,20,10880.0,217.6,10662.4,5440.0,5222.4,1-Dec-13,12,December,2013
+Government,United States of America,Amarilla,Low,1236.0,260,20,24720.0,494.4,24225.6,12360.0,11865.6,1-Nov-14,11,November,2014
+Government,France,Amarilla,Low,941.0,260,20,18820.0,376.4,18443.6,9410.0,9033.6,1-Nov-14,11,November,2014
+Government,Germany,Carretera,Low,2580.0,3,20,51600.0,1548.0,50052.0,25800.0,24252.0,1-Apr-14,4,April,2014
+Government,Canada,Carretera,Low,831.0,3,20,16620.0,498.6,16121.4,8310.0,7811.4,1-May-14,5,May,2014
+Government,Canada,Velo,Low,3850.5,120,20,77010.0,2310.3,74699.7,38505.0,36194.7,1-Apr-14,4,April,2014
+Government,United States of America,Velo,Low,736.0,120,20,14720.0,588.8,14131.2,7360.0,6771.2,1-Sep-13,9,September,2013
+Government,Canada,Paseo,Low,2074.0,10,20,41480.0,1659.2,39820.8,20740.0,19080.8,1-Sep-14,9,September,2014
+Government,United States of America,Paseo,Low,1056.0,10,20,21120.0,844.8,20275.2,10560.0,9715.2,1-Sep-14,9,September,2014
+Government,Canada,Velo,Low,2646.0,120,20,52920.0,2116.8,50803.2,26460.0,24343.2,1-Sep-13,9,September,2013
+Government,France,Carretera,Medium,1563.0,3,20,31260.0,1563.0,29697.0,15630.0,14067.0,1-May-14,5,May,2014
+Government,France,Paseo,Medium,1303.0,10,20,26060.0,1303.0,24757.0,13030.0,11727.0,1-Feb-14,2,February,2014
+Government,Canada,Paseo,Medium,1389.0,10,20,27780.0,1389.0,26391.0,13890.0,12501.0,1-Oct-13,10,October,2013
+Government,Canada,Paseo,Medium,1802.0,10,20,36040.0,1802.0,34238.0,18020.0,16218.0,1-Dec-13,12,December,2013
+Government,United States of America,Paseo,Medium,2663.0,10,20,53260.0,2663.0,50597.0,26630.0,23967.0,1-Dec-14,12,December,2014
+Government,United States of America,Velo,Medium,2832.0,120,20,56640.0,2832.0,53808.0,28320.0,25488.0,1-Aug-14,8,August,2014
+Government,France,Velo,Medium,1579.0,120,20,31580.0,1579.0,30001.0,15790.0,14211.0,1-Aug-14,8,August,2014
+Government,France,Velo,Medium,1033.0,120,20,20660.0,1033.0,19627.0,10330.0,9297.0,1-Dec-13,12,December,2013
+Government,Canada,VTT,Medium,1389.0,250,20,27780.0,1389.0,26391.0,13890.0,12501.0,1-Oct-13,10,October,2013
+Government,United States of America,VTT,Medium,1265.0,250,20,25300.0,1265.0,24035.0,12650.0,11385.0,1-Nov-13,11,November,2013
+Government,Germany,VTT,Medium,2297.0,250,20,45940.0,2297.0,43643.0,22970.0,20673.0,1-Nov-13,11,November,2013
+Government,United States of America,VTT,Medium,2663.0,250,20,53260.0,2663.0,50597.0,26630.0,23967.0,1-Dec-14,12,December,2014
+Government,United States of America,Carretera,Medium,1117.5,3,20,22350.0,1341.0,21009.0,11175.0,9834.0,1-Jan-14,1,January,2014
+Government,Mexico,VTT,Medium,1123.0,250,20,22460.0,1347.6,21112.4,11230.0,9882.4,1-Nov-13,11,November,2013
+Government,France,Montana,Medium,1757.0,5,20,35140.0,2108.4,33031.6,17570.0,15461.6,1-Oct-13,10,October,2013
+Government,France,Paseo,Medium,1757.0,10,20,35140.0,2108.4,33031.6,17570.0,15461.6,1-Oct-13,10,October,2013
+Government,Germany,Velo,Medium,1001.0,120,20,20020.0,1201.2,18818.8,10010.0,8808.8,1-Aug-14,8,August,2014
+Government,Mexico,Carretera,Medium,1834.0,3,20,36680.0,2567.6,34112.4,18340.0,15772.4,1-Sep-13,9,September,2013
+Government,France,Montana,Medium,1976.0,5,20,39520.0,2766.4,36753.6,19760.0,16993.6,1-Oct-14,10,October,2014
+Government,France,Paseo,Medium,1535.0,10,20,30700.0,2149.0,28551.0,15350.0,13201.0,1-Sep-14,9,September,2014
+Government,Mexico,Velo,Medium,609.0,120,20,12180.0,852.6,11327.4,6090.0,5237.4,1-Aug-14,8,August,2014
+Government,France,Velo,Medium,1976.0,120,20,39520.0,2766.4,36753.6,19760.0,16993.6,1-Oct-14,10,October,2014
+Government,United States of America,Velo,Medium,1421.0,120,20,28420.0,1989.4,26430.6,14210.0,12220.6,1-Dec-13,12,December,2013
+Government,Germany,Velo,Medium,588.0,120,20,11760.0,823.2,10936.8,5880.0,5056.8,1-Dec-13,12,December,2013
+Government,Canada,Amarilla,Medium,1118.0,260,20,22360.0,1565.2,20794.8,11180.0,9614.8,1-Nov-14,11,November,2014
+Government,United States of America,Montana,Medium,1282.0,5,20,25640.0,2051.2,23588.8,12820.0,10768.8,1-Jun-14,6,June,2014
+Government,United States of America,Amarilla,Medium,1282.0,260,20,25640.0,2051.2,23588.8,12820.0,10768.8,1-Jun-14,6,June,2014
+Government,Canada,Montana,Medium,708.0,5,20,14160.0,1132.8,13027.2,7080.0,5947.2,1-Jun-14,6,June,2014
+Government,Germany,Montana,Medium,645.0,5,20,12900.0,1032.0,11868.0,6450.0,5418.0,1-Jul-14,7,July,2014
+Government,Germany,Paseo,Medium,1366.0,10,20,27320.0,2185.6,25134.4,13660.0,11474.4,1-Jun-14,6,June,2014
+Government,Germany,Paseo,Medium,1934.0,10,20,38680.0,3094.4,35585.6,19340.0,16245.6,1-Sep-14,9,September,2014
+Government,Mexico,Paseo,Medium,2993.0,10,20,59860.0,4788.8,55071.2,29930.0,25141.2,1-Sep-14,9,September,2014
+Government,Canada,Amarilla,Medium,708.0,260,20,14160.0,1132.8,13027.2,7080.0,5947.2,1-Jun-14,6,June,2014
+Government,Germany,Amarilla,Medium,1366.0,260,20,27320.0,2185.6,25134.4,13660.0,11474.4,1-Jun-14,6,June,2014
+Government,Germany,Amarilla,Medium,1520.0,260,20,30400.0,2432.0,27968.0,15200.0,12768.0,1-Nov-14,11,November,2014
+Government,United States of America,VTT,Medium,436.5,250,20,8730.0,698.4,8031.6,4365.0,3666.6,1-Jul-14,7,July,2014
+Government,Mexico,Amarilla,Medium,1694.0,260,20,33880.0,3049.2,30830.8,16940.0,13890.8,1-Nov-14,11,November,2014
+Government,Germany,Carretera,Medium,663.0,3,20,13260.0,1193.4,12066.6,6630.0,5436.6,1-May-14,5,May,2014
+Government,United States of America,Paseo,Medium,973.0,10,20,19460.0,1751.4,17708.6,9730.0,7978.6,1-Mar-14,3,March,2014
+Government,Mexico,Paseo,Medium,1038.0,10,20,20760.0,1868.4,18891.6,10380.0,8511.6,1-Jun-14,6,June,2014
+Government,France,VTT,Medium,2682.0,250,20,53640.0,4827.6,48812.4,26820.0,21992.4,1-Nov-13,11,November,2013
+Government,Mexico,Amarilla,Medium,1038.0,260,20,20760.0,1868.4,18891.6,10380.0,8511.6,1-Jun-14,6,June,2014
+Government,France,Paseo,High,1954.0,10,20,39080.0,3908.0,35172.0,19540.0,15632.0,1-Mar-14,3,March,2014
+Government,Germany,Paseo,High,241.0,10,20,4820.0,482.0,4338.0,2410.0,1928.0,1-Oct-14,10,October,2014
+Government,Germany,Velo,High,241.0,120,20,4820.0,482.0,4338.0,2410.0,1928.0,1-Oct-14,10,October,2014
+Government,Mexico,Amarilla,High,2039.0,260,20,40780.0,4078.0,36702.0,20390.0,16312.0,1-May-14,5,May,2014
+Government,Germany,Montana,High,2992.0,5,20,59840.0,6582.4,53257.6,29920.0,23337.6,1-Oct-13,10,October,2013
+Government,Mexico,Paseo,High,1122.0,10,20,22440.0,2468.4,19971.6,11220.0,8751.6,1-Mar-14,3,March,2014
+Government,Canada,Paseo,High,2394.0,10,20,47880.0,5266.8,42613.2,23940.0,18673.2,1-Aug-14,8,August,2014
+Government,Germany,Paseo,High,2992.0,10,20,59840.0,6582.4,53257.6,29920.0,23337.6,1-Oct-13,10,October,2013
+Government,France,Velo,High,2805.0,120,20,56100.0,6171.0,49929.0,28050.0,21879.0,1-Sep-13,9,September,2013
+Government,Canada,VTT,High,2935.0,250,20,58700.0,6457.0,52243.0,29350.0,22893.0,1-Nov-13,11,November,2013
+Government,Mexico,Amarilla,High,2629.0,260,20,52580.0,5783.8,46796.2,26290.0,20506.2,1-Jan-14,1,January,2014
+Government,Mexico,Montana,High,1715.0,5,20,34300.0,4116.0,30184.0,17150.0,13034.0,1-Oct-13,10,October,2013
+Government,Mexico,Paseo,High,905.0,10,20,18100.0,2172.0,15928.0,9050.0,6878.0,1-Oct-14,10,October,2014
+Government,Mexico,Paseo,High,1715.0,10,20,34300.0,4116.0,30184.0,17150.0,13034.0,1-Oct-13,10,October,2013
+Government,Mexico,Paseo,High,1233.0,10,20,24660.0,2959.2,21700.8,12330.0,9370.8,1-Dec-14,12,December,2014
+Government,Mexico,Velo,High,905.0,120,20,18100.0,2172.0,15928.0,9050.0,6878.0,1-Oct-14,10,October,2014
+Government,Mexico,VTT,High,1233.0,250,20,24660.0,2959.2,21700.8,12330.0,9370.8,1-Dec-14,12,December,2014
+Government,France,Carretera,High,2521.5,3,20,50430.0,6051.6,44378.4,25215.0,19163.4,1-Jan-14,1,January,2014
+Government,Germany,Paseo,High,1531.0,10,20,30620.0,3674.4,26945.6,15310.0,11635.6,1-Dec-14,12,December,2014
+Government,Germany,VTT,High,1531.0,250,20,30620.0,3674.4,26945.6,15310.0,11635.6,1-Dec-14,12,December,2014
+Government,Germany,Carretera,High,442.0,3,20,8840.0,1149.2,7690.8,4420.0,3270.8,1-Sep-13,9,September,2013
+Government,Mexico,Montana,High,2255.0,5,20,45100.0,5863.0,39237.0,22550.0,16687.0,1-Jul-14,7,July,2014
+Government,Canada,Montana,High,1249.0,5,20,24980.0,3247.4,21732.6,12490.0,9242.6,1-Oct-14,10,October,2014
+Government,United States of America,Paseo,High,2641.0,10,20,52820.0,6866.6,45953.4,26410.0,19543.4,1-Feb-14,2,February,2014
+Government,Germany,Paseo,High,2708.0,10,20,54160.0,7040.8,47119.2,27080.0,20039.2,1-Feb-14,2,February,2014
+Government,Canada,Paseo,High,1249.0,10,20,24980.0,3247.4,21732.6,12490.0,9242.6,1-Oct-14,10,October,2014
+Government,Mexico,Carretera,High,2579.0,3,20,51580.0,7221.2,44358.8,25790.0,18568.8,1-Apr-14,4,April,2014
+Government,United States of America,Carretera,High,1743.0,3,20,34860.0,4880.4,29979.6,17430.0,12549.6,1-May-14,5,May,2014
+Government,Canada,Paseo,High,2428.0,10,20,48560.0,6798.4,41761.6,24280.0,17481.6,1-Mar-14,3,March,2014
+Government,Mexico,Paseo,High,260.0,10,20,5200.0,728.0,4472.0,2600.0,1872.0,1-Feb-14,2,February,2014
+Government,United States of America,Velo,High,606.0,120,20,12120.0,1696.8,10423.2,6060.0,4363.2,1-Apr-14,4,April,2014
+Government,Germany,Paseo,High,1158.0,10,20,23160.0,3474.0,19686.0,11580.0,8106.0,1-Mar-14,3,March,2014
+Government,United States of America,Paseo,High,267.0,10,20,5340.0,801.0,4539.0,2670.0,1869.0,1-Oct-13,10,October,2013
+Government,France,Paseo,High,293.0,10,20,5860.0,879.0,4981.0,2930.0,2051.0,1-Dec-14,12,December,2014
+Government,Canada,VTT,High,865.5,250,20,17310.0,2596.5,14713.5,8655.0,6058.5,1-Jul-14,7,July,2014
+Government,United States of America,VTT,High,267.0,250,20,5340.0,801.0,4539.0,2670.0,1869.0,1-Oct-13,10,October,2013
+Government,France,VTT,High,293.0,250,20,5860.0,879.0,4981.0,2930.0,2051.0,1-Dec-14,12,December,2014
+Government,Germany,Montana,None,2146.0,5,7,15022.0,0.0,15022.0,10730.0,4292.0,1-Sep-14,9,September,2014
+Government,Mexico,Paseo,None,883.0,10,7,6181.0,0.0,6181.0,4415.0,1766.0,1-Aug-14,8,August,2014
+Government,United States of America,Paseo,None,1143.0,10,7,8001.0,0.0,8001.0,5715.0,2286.0,1-Oct-14,10,October,2014
+Government,Mexico,Velo,None,1493.0,120,7,10451.0,0.0,10451.0,7465.0,2986.0,1-Jan-14,1,January,2014
+Government,Germany,Amarilla,None,1686.0,260,7,11802.0,0.0,11802.0,8430.0,3372.0,1-Jul-14,7,July,2014
+Government,United States of America,Amarilla,None,1143.0,260,7,8001.0,0.0,8001.0,5715.0,2286.0,1-Oct-14,10,October,2014
+Government,France,Paseo,Low,3945.0,10,7,27615.0,276.15,27338.85,19725.0,7613.85,1-Jan-14,1,January,2014
+Government,France,Paseo,Low,1030.0,10,7,7210.0,72.1,7137.9,5150.0,1987.9,1-May-14,5,May,2014
+Government,France,Velo,Low,639.0,120,7,4473.0,44.73,4428.27,3195.0,1233.27,1-Nov-14,11,November,2014
+Government,Canada,VTT,Low,1326.0,250,7,9282.0,92.82,9189.18,6630.0,2559.18,1-Mar-14,3,March,2014
+Government,United States of America,Carretera,Low,2529.0,3,7,17703.0,177.03,17525.97,12645.0,4880.97,1-Jul-14,7,July,2014
+Government,Canada,Montana,Low,1830.0,5,7,12810.0,128.1,12681.9,9150.0,3531.9,1-Aug-14,8,August,2014
+Government,United States of America,Paseo,Low,4492.5,10,7,31447.5,314.475,31133.025,22462.5,8670.525,1-Apr-14,4,April,2014
+Government,Mexico,Velo,Low,362.0,120,7,2534.0,25.34,2508.66,1810.0,698.66,1-May-14,5,May,2014
+Government,Canada,Velo,Low,2092.0,120,7,14644.0,146.44,14497.56,10460.0,4037.56,1-Nov-13,11,November,2013
+Government,Germany,VTT,Low,263.0,250,7,1841.0,18.41,1822.59,1315.0,507.59,1-Mar-14,3,March,2014
+Government,France,Carretera,Low,2145.0,3,7,15015.0,300.3,14714.7,10725.0,3989.7,1-Nov-13,11,November,2013
+Government,United States of America,Paseo,Low,2013.0,10,7,14091.0,281.82,13809.18,10065.0,3744.18,1-Dec-13,12,December,2013
+Government,Germany,Montana,Low,1958.0,5,7,13706.0,411.18,13294.82,9790.0,3504.82,1-Feb-14,2,February,2014
+Government,France,Montana,Low,544.0,5,7,3808.0,114.24,3693.76,2720.0,973.76,1-Sep-14,9,September,2014
+Government,Mexico,Paseo,Low,1760.0,10,7,12320.0,369.6,11950.4,8800.0,3150.4,1-Sep-13,9,September,2013
+Government,Canada,Carretera,Low,2851.0,3,7,19957.0,798.28,19158.72,14255.0,4903.72,1-Oct-13,10,October,2013
+Government,Canada,Montana,Low,2851.0,5,7,19957.0,798.28,19158.72,14255.0,4903.72,1-Oct-13,10,October,2013
+Government,Canada,Paseo,Low,4251.0,10,7,29757.0,1190.28,28566.72,21255.0,7311.72,1-Jan-14,1,January,2014
+Government,Germany,Montana,Medium,1159.0,5,7,8113.0,405.65,7707.35,5795.0,1912.35,1-Oct-13,10,October,2013
+Government,Germany,Paseo,Medium,1372.0,10,7,9604.0,480.2,9123.8,6860.0,2263.8,1-Jan-14,1,January,2014
+Government,Canada,Paseo,Medium,2349.0,10,7,16443.0,822.15,15620.85,11745.0,3875.85,1-Sep-13,9,September,2013
+Government,Mexico,Paseo,Medium,2689.0,10,7,18823.0,941.15,17881.85,13445.0,4436.85,1-Oct-14,10,October,2014
+Government,Mexico,VTT,Medium,2689.0,250,7,18823.0,941.15,17881.85,13445.0,4436.85,1-Oct-14,10,October,2014
+Government,Mexico,Amarilla,Medium,1683.0,260,7,11781.0,589.05,11191.95,8415.0,2776.95,1-Jul-14,7,July,2014
+Government,Germany,Amarilla,Medium,1159.0,260,7,8113.0,405.65,7707.35,5795.0,1912.35,1-Oct-13,10,October,2013
+Government,Germany,Carretera,Medium,1016.0,3,7,7112.0,355.6,6756.4,5080.0,1676.4,1-Nov-13,11,November,2013
+Government,United States of America,Carretera,Medium,570.0,3,7,3990.0,199.5,3790.5,2850.0,940.5,1-Dec-14,12,December,2014
+Government,France,Carretera,Medium,2487.0,3,7,17409.0,870.45,16538.55,12435.0,4103.55,1-Dec-14,12,December,2014
+Government,United States of America,Paseo,Medium,2327.0,10,7,16289.0,814.45,15474.55,11635.0,3839.55,1-May-14,5,May,2014
+Government,France,Paseo,Medium,2136.0,10,7,14952.0,747.6,14204.4,10680.0,3524.4,1-Dec-13,12,December,2013
+Government,United States of America,VTT,Medium,570.0,250,7,3990.0,199.5,3790.5,2850.0,940.5,1-Dec-14,12,December,2014
+Government,France,VTT,Medium,2487.0,250,7,17409.0,870.45,16538.55,12435.0,4103.55,1-Dec-14,12,December,2014
+Government,United States of America,Carretera,Medium,263.0,3,7,1841.0,110.46,1730.54,1315.0,415.54,1-Nov-13,11,November,2013
+Government,France,Montana,Medium,1403.0,5,7,9821.0,589.26,9231.74,7015.0,2216.74,1-Oct-13,10,October,2013
+Government,Mexico,Velo,Medium,1498.0,120,7,10486.0,629.16,9856.84,7490.0,2366.84,1-Jun-14,6,June,2014
+Government,Mexico,VTT,Medium,1498.0,250,7,10486.0,629.16,9856.84,7490.0,2366.84,1-Jun-14,6,June,2014
+Government,France,Amarilla,Medium,1403.0,260,7,9821.0,589.26,9231.74,7015.0,2216.74,1-Oct-13,10,October,2013
+Government,Mexico,Velo,Medium,1333.0,120,7,9331.0,559.86,8771.14,6665.0,2106.14,1-Nov-14,11,November,2014
+Government,France,Paseo,Medium,1031.0,10,7,7217.0,505.19,6711.81,5155.0,1556.81,1-Sep-13,9,September,2013
+Government,Canada,Velo,Medium,1135.0,120,7,7945.0,556.15,7388.85,5675.0,1713.85,1-Jun-14,6,June,2014
+Government,United States of America,Velo,Medium,547.0,120,7,3829.0,268.03,3560.97,2735.0,825.97,1-Nov-14,11,November,2014
+Government,Canada,Velo,Medium,1582.0,120,7,11074.0,775.18,10298.82,7910.0,2388.82,1-Dec-14,12,December,2014
+Government,Canada,VTT,Medium,1582.0,250,7,11074.0,775.18,10298.82,7910.0,2388.82,1-Dec-14,12,December,2014
+Government,Canada,Amarilla,Medium,1135.0,260,7,7945.0,556.15,7388.85,5675.0,1713.85,1-Jun-14,6,June,2014
+Government,Germany,Paseo,Medium,2125.0,10,7,14875.0,1041.25,13833.75,10625.0,3208.75,1-Dec-13,12,December,2013
+Government,Canada,Montana,Medium,488.0,5,7,3416.0,273.28,3142.72,2440.0,702.72,1-Feb-14,2,February,2014
+Government,Canada,Paseo,Medium,257.0,10,7,1799.0,143.92,1655.08,1285.0,370.08,1-May-14,5,May,2014
+Government,Germany,Paseo,Medium,1259.0,10,7,8813.0,705.04,8107.96,6295.0,1812.96,1-Apr-14,4,April,2014
+Government,Germany,Paseo,Medium,1095.0,10,7,7665.0,613.2,7051.8,5475.0,1576.8,1-May-14,5,May,2014
+Government,United States of America,Paseo,Medium,678.0,10,7,4746.0,379.68,4366.32,3390.0,976.32,1-Aug-14,8,August,2014
+Government,Germany,Paseo,Medium,1598.0,10,7,11186.0,894.88,10291.12,7990.0,2301.12,1-Aug-14,8,August,2014
+Government,Germany,Paseo,Medium,2409.0,10,7,16863.0,1349.04,15513.96,12045.0,3468.96,1-Sep-13,9,September,2013
+Government,Mexico,Paseo,Medium,1946.0,10,7,13622.0,1089.76,12532.24,9730.0,2802.24,1-Dec-13,12,December,2013
+Government,United States of America,Velo,Medium,2907.0,120,7,20349.0,1627.92,18721.08,14535.0,4186.08,1-Jun-14,6,June,2014
+Government,Germany,Velo,Medium,2338.0,120,7,16366.0,1309.28,15056.72,11690.0,3366.72,1-Jun-14,6,June,2014
+Government,Germany,VTT,Medium,2338.0,250,7,16366.0,1309.28,15056.72,11690.0,3366.72,1-Jun-14,6,June,2014
+Government,United States of America,Amarilla,Medium,2907.0,260,7,20349.0,1627.92,18721.08,14535.0,4186.08,1-Jun-14,6,June,2014
+Government,Canada,Montana,Medium,1611.0,5,7,11277.0,1014.93,10262.07,8055.0,2207.07,1-Dec-13,12,December,2013
+Government,Canada,Carretera,Medium,819.0,3,7,5733.0,515.97,5217.03,4095.0,1122.03,1-Jul-14,7,July,2014
+Government,Mexico,Carretera,Medium,521.0,3,7,3647.0,328.23,3318.77,2605.0,713.77,1-Dec-14,12,December,2014
+Government,Germany,Paseo,Medium,360.0,10,7,2520.0,226.8,2293.2,1800.0,493.2,1-Oct-14,10,October,2014
+Government,Germany,VTT,Medium,360.0,250,7,2520.0,226.8,2293.2,1800.0,493.2,1-Oct-14,10,October,2014
+Government,Mexico,VTT,Medium,521.0,250,7,3647.0,328.23,3318.77,2605.0,713.77,1-Dec-14,12,December,2014
+Government,United States of America,Montana,High,2328.0,5,7,16296.0,1629.6,14666.4,11640.0,3026.4,1-Sep-14,9,September,2014
+Government,Germany,Velo,High,2665.0,120,7,18655.0,1865.5,16789.5,13325.0,3464.5,1-Nov-14,11,November,2014
+Government,France,Paseo,High,2532.0,10,7,17724.0,1949.64,15774.36,12660.0,3114.36,1-Apr-14,4,April,2014
+Government,United States of America,VTT,High,1579.0,250,7,11053.0,1215.83,9837.17,7895.0,1942.17,1-Mar-14,3,March,2014
+Government,Mexico,Carretera,High,2706.0,3,7,18942.0,2083.62,16858.38,13530.0,3328.38,1-Nov-13,11,November,2013
+Government,Canada,Velo,High,1808.0,120,7,12656.0,1392.16,11263.84,9040.0,2223.84,1-Nov-14,11,November,2014
+Government,United States of America,Paseo,High,380.0,10,7,2660.0,292.6,2367.4,1900.0,467.4,1-Sep-13,9,September,2013
+Government,Mexico,Montana,High,2420.0,5,7,16940.0,2032.8,14907.2,12100.0,2807.2,1-Sep-14,9,September,2014
+Government,Canada,Montana,High,2734.0,5,7,19138.0,2296.56,16841.44,13670.0,3171.44,1-Oct-14,10,October,2014
+Government,France,Amarilla,High,3421.5,260,7,23950.5,2874.06,21076.44,17107.5,3968.94,1-Jul-14,7,July,2014
+Government,Canada,Amarilla,High,2734.0,260,7,19138.0,2296.56,16841.44,13670.0,3171.44,1-Oct-14,10,October,2014
+Government,France,VTT,High,1491.0,250,7,10437.0,1252.44,9184.56,7455.0,1729.56,1-Mar-14,3,March,2014
+Government,United States of America,Montana,High,1298.0,5,7,9086.0,1181.18,7904.82,6490.0,1414.82,1-Feb-14,2,February,2014
+Government,United States of America,Paseo,High,1438.5,10,7,10069.5,1309.035,8760.465,7192.5,1567.965,1-Jan-14,1,January,2014
+Government,France,Paseo,High,2696.0,10,7,18872.0,2453.36,16418.64,13480.0,2938.64,1-Aug-14,8,August,2014
+Government,France,Velo,High,1190.0,120,7,8330.0,1082.9,7247.1,5950.0,1297.1,1-Jun-14,6,June,2014
+Government,France,Amarilla,High,1190.0,260,7,8330.0,1082.9,7247.1,5950.0,1297.1,1-Jun-14,6,June,2014
+Government,United States of America,Carretera,High,2996.0,3,7,20972.0,2936.08,18035.92,14980.0,3055.92,1-Oct-13,10,October,2013
+Government,Germany,Carretera,High,280.0,3,7,1960.0,274.4,1685.6,1400.0,285.6,1-Dec-14,12,December,2014
+Government,France,Montana,High,293.0,5,7,2051.0,287.14,1763.86,1465.0,298.86,1-Feb-14,2,February,2014
+Government,United States of America,Montana,High,2996.0,5,7,20972.0,2936.08,18035.92,14980.0,3055.92,1-Oct-13,10,October,2013
+Government,Germany,VTT,High,280.0,250,7,1960.0,274.4,1685.6,1400.0,285.6,1-Dec-14,12,December,2014
+Government,Canada,Montana,High,388.0,5,7,2716.0,380.24,2335.76,1940.0,395.76,1-Sep-14,9,September,2014
+Government,Mexico,Montana,High,1727.0,5,7,12089.0,1692.46,10396.54,8635.0,1761.54,1-Oct-13,10,October,2013
+Government,France,Paseo,High,1731.0,10,7,12117.0,1696.38,10420.62,8655.0,1765.62,1-Oct-14,10,October,2014
+Government,Mexico,VTT,High,2903.0,250,7,20321.0,2844.94,17476.06,14515.0,2961.06,1-Mar-14,3,March,2014
+Government,France,Amarilla,High,1731.0,260,7,12117.0,1696.38,10420.62,8655.0,1765.62,1-Oct-14,10,October,2014
+Government,Mexico,Amarilla,High,1727.0,260,7,12089.0,1692.46,10396.54,8635.0,1761.54,1-Oct-13,10,October,2013
+Government,Mexico,Paseo,High,2535.0,10,7,17745.0,2661.75,15083.25,12675.0,2408.25,1-Apr-14,4,April,2014
+Government,Mexico,Montana,High,1368.0,5,7,9576.0,1436.4,8139.6,6840.0,1299.6,1-Feb-14,2,February,2014
+Government,Canada,Paseo,High,723.0,10,7,5061.0,759.15,4301.85,3615.0,686.85,1-Apr-14,4,April,2014
+Midmarket,France,Carretera,None,2178.0,3,15,32670.0,0.0,32670.0,21780.0,10890.0,1-Jun-14,6,June,2014
+Midmarket,Germany,Carretera,None,888.0,3,15,13320.0,0.0,13320.0,8880.0,4440.0,1-Jun-14,6,June,2014
+Midmarket,Mexico,Carretera,None,2470.0,3,15,37050.0,0.0,37050.0,24700.0,12350.0,1-Jun-14,6,June,2014
+Midmarket,Germany,Montana,None,921.0,5,15,13815.0,0.0,13815.0,9210.0,4605.0,1-Mar-14,3,March,2014
+Channel Partners,Canada,Montana,None,2518.0,5,12,30216.0,0.0,30216.0,7554.0,22662.0,1-Jun-14,6,June,2014
+Channel Partners,Germany,Montana,None,1545.0,5,12,18540.0,0.0,18540.0,4635.0,13905.0,1-Jun-14,6,June,2014
+Midmarket,Mexico,Montana,None,2470.0,5,15,37050.0,0.0,37050.0,24700.0,12350.0,1-Jun-14,6,June,2014
+Enterprise,Canada,Montana,None,2665.5,5,125,333187.5,0.0,333187.5,319860.0,13327.5,1-Jul-14,7,July,2014
+Small Business,Mexico,Montana,None,958.0,5,300,287400.0,0.0,287400.0,239500.0,47900.0,1-Aug-14,8,August,2014
+Enterprise,Canada,Montana,None,345.0,5,125,43125.0,0.0,43125.0,41400.0,1725.0,1-Oct-13,10,October,2013
+Midmarket,United States of America,Montana,None,615.0,5,15,9225.0,0.0,9225.0,6150.0,3075.0,1-Dec-14,12,December,2014
+Enterprise,France,Velo,None,1804.0,120,125,225500.0,0.0,225500.0,216480.0,9020.0,1-Feb-14,2,February,2014
+Channel Partners,Germany,Velo,None,2161.0,120,12,25932.0,0.0,25932.0,6483.0,19449.0,1-Mar-14,3,March,2014
+Channel Partners,Germany,Velo,None,1545.0,120,12,18540.0,0.0,18540.0,4635.0,13905.0,1-Jun-14,6,June,2014
+Enterprise,United States of America,Velo,None,2821.0,120,125,352625.0,0.0,352625.0,338520.0,14105.0,1-Aug-14,8,August,2014
+Enterprise,Canada,Velo,None,345.0,120,125,43125.0,0.0,43125.0,41400.0,1725.0,1-Oct-13,10,October,2013
+Small Business,Canada,VTT,None,2001.0,250,300,600300.0,0.0,600300.0,500250.0,100050.0,1-Feb-14,2,February,2014
+Channel Partners,Germany,VTT,None,2838.0,250,12,34056.0,0.0,34056.0,8514.0,25542.0,1-Apr-14,4,April,2014
+Midmarket,France,VTT,None,2178.0,250,15,32670.0,0.0,32670.0,21780.0,10890.0,1-Jun-14,6,June,2014
+Midmarket,Germany,VTT,None,888.0,250,15,13320.0,0.0,13320.0,8880.0,4440.0,1-Jun-14,6,June,2014
+Small Business,France,VTT,None,2151.0,250,300,645300.0,0.0,645300.0,537750.0,107550.0,1-Sep-14,9,September,2014
+Channel Partners,United States of America,Amarilla,None,1953.0,260,12,23436.0,0.0,23436.0,5859.0,17577.0,1-Apr-14,4,April,2014
+Enterprise,Germany,Amarilla,None,4219.5,260,125,527437.5,0.0,527437.5,506340.0,21097.5,1-Apr-14,4,April,2014
+Channel Partners,United States of America,Amarilla,None,2141.0,260,12,25692.0,0.0,25692.0,6423.0,19269.0,1-Aug-14,8,August,2014
+Midmarket,United States of America,Amarilla,None,615.0,260,15,9225.0,0.0,9225.0,6150.0,3075.0,1-Dec-14,12,December,2014
+Channel Partners,United States of America,Carretera,Low,1858.0,3,12,22296.0,222.96,22073.04,5574.0,16499.04,1-Feb-14,2,February,2014
+Channel Partners,Canada,Carretera,Low,1445.0,3,12,17340.0,173.4,17166.6,4335.0,12831.6,1-Sep-14,9,September,2014
+Enterprise,United States of America,Carretera,Low,330.0,3,125,41250.0,412.5,40837.5,39600.0,1237.5,1-Sep-13,9,September,2013
+Channel Partners,France,Carretera,Low,2671.0,3,12,32052.0,320.52,31731.48,8013.0,23718.48,1-Sep-14,9,September,2014
+Channel Partners,Germany,Carretera,Low,766.0,3,12,9192.0,91.92,9100.08,2298.0,6802.08,1-Oct-13,10,October,2013
+Small Business,Mexico,Carretera,Low,494.0,3,300,148200.0,1482.0,146718.0,123500.0,23218.0,1-Oct-13,10,October,2013
+Midmarket,Mexico,Montana,Low,2214.0,5,15,33210.0,332.1,32877.9,22140.0,10737.9,1-Mar-14,3,March,2014
+Small Business,United States of America,Montana,Low,2301.0,5,300,690300.0,6903.0,683397.0,575250.0,108147.0,1-Apr-14,4,April,2014
+Small Business,United States of America,Montana,Low,2498.0,5,300,749400.0,7494.0,741906.0,624500.0,117406.0,1-Sep-13,9,September,2013
+Enterprise,United States of America,Montana,Low,663.0,5,125,82875.0,828.75,82046.25,79560.0,2486.25,1-Oct-13,10,October,2013
+Enterprise,Canada,Velo,Low,923.0,120,125,115375.0,1153.75,114221.25,110760.0,3461.25,1-Aug-14,8,August,2014
+Enterprise,United States of America,Velo,Low,663.0,120,125,82875.0,828.75,82046.25,79560.0,2486.25,1-Oct-13,10,October,2013
+Enterprise,United States of America,VTT,Low,727.0,250,125,90875.0,908.75,89966.25,87240.0,2726.25,1-Jun-14,6,June,2014
+Enterprise,France,VTT,Low,787.0,250,125,98375.0,983.75,97391.25,94440.0,2951.25,1-Jun-14,6,June,2014
+Small Business,Germany,VTT,Low,986.0,250,300,295800.0,2958.0,292842.0,246500.0,46342.0,1-Sep-14,9,September,2014
+Small Business,Mexico,VTT,Low,494.0,250,300,148200.0,1482.0,146718.0,123500.0,23218.0,1-Oct-13,10,October,2013
+Enterprise,France,VTT,Low,1744.0,250,125,218000.0,2180.0,215820.0,209280.0,6540.0,1-Nov-14,11,November,2014
+Channel Partners,United States of America,Amarilla,Low,1989.0,260,12,23868.0,238.68,23629.32,5967.0,17662.32,1-Sep-13,9,September,2013
+Midmarket,France,Amarilla,Low,321.0,260,15,4815.0,48.15,4766.85,3210.0,1556.85,1-Nov-13,11,November,2013
+Enterprise,Canada,Carretera,Low,742.5,3,125,92812.5,1856.25,90956.25,89100.0,1856.25,1-Apr-14,4,April,2014
+Channel Partners,Canada,Carretera,Low,1295.0,3,12,15540.0,310.8,15229.2,3885.0,11344.2,1-Oct-14,10,October,2014
+Small Business,Germany,Carretera,Low,214.0,3,300,64200.0,1284.0,62916.0,53500.0,9416.0,1-Oct-13,10,October,2013
+Channel Partners,United States of America,Montana,Low,1142.0,5,12,13704.0,274.08,13429.92,3426.0,10003.92,1-Jun-14,6,June,2014
+Channel Partners,Mexico,Montana,Low,690.0,5,12,8280.0,165.6,8114.4,2070.0,6044.4,1-Nov-14,11,November,2014
+Enterprise,Mexico,Montana,Low,1660.0,5,125,207500.0,4150.0,203350.0,199200.0,4150.0,1-Nov-13,11,November,2013
+Enterprise,Germany,Velo,Low,809.0,120,125,101125.0,2022.5,99102.5,97080.0,2022.5,1-Oct-13,10,October,2013
+Enterprise,Mexico,Velo,Low,2145.0,120,125,268125.0,5362.5,262762.5,257400.0,5362.5,1-Oct-13,10,October,2013
+Channel Partners,France,Velo,Low,1055.0,120,12,12660.0,253.2,12406.8,3165.0,9241.8,1-Dec-14,12,December,2014
+Channel Partners,Mexico,Velo,Low,1084.0,120,12,13008.0,260.16,12747.84,3252.0,9495.84,1-Dec-14,12,December,2014
+Enterprise,Mexico,VTT,Low,662.0,250,125,82750.0,1655.0,81095.0,79440.0,1655.0,1-Jun-14,6,June,2014
+Small Business,Germany,VTT,Low,214.0,250,300,64200.0,1284.0,62916.0,53500.0,9416.0,1-Oct-13,10,October,2013
+Enterprise,Canada,VTT,Low,2729.0,250,125,341125.0,6822.5,334302.5,327480.0,6822.5,1-Dec-14,12,December,2014
+Small Business,Germany,Amarilla,Low,259.0,260,300,77700.0,1554.0,76146.0,64750.0,11396.0,1-Mar-14,3,March,2014
+Small Business,Mexico,Amarilla,Low,1101.0,260,300,330300.0,6606.0,323694.0,275250.0,48444.0,1-Mar-14,3,March,2014
+Enterprise,Germany,Amarilla,Low,2276.0,260,125,284500.0,5690.0,278810.0,273120.0,5690.0,1-May-14,5,May,2014
+Small Business,Canada,Amarilla,Low,1916.0,260,300,574800.0,11496.0,563304.0,479000.0,84304.0,1-Dec-14,12,December,2014
+Enterprise,France,Carretera,Low,4243.5,3,125,530437.5,15913.125,514524.375,509220.0,5304.375,1-Apr-14,4,April,2014
+Small Business,Germany,Carretera,Low,689.0,3,300,206700.0,6201.0,200499.0,172250.0,28249.0,1-Jun-14,6,June,2014
+Channel Partners,United States of America,Carretera,Low,1947.0,3,12,23364.0,700.92,22663.08,5841.0,16822.08,1-Sep-14,9,September,2014
+Channel Partners,Canada,Carretera,Low,908.0,3,12,10896.0,326.88,10569.12,2724.0,7845.12,1-Dec-13,12,December,2013
+Channel Partners,France,Montana,Low,1901.0,5,12,22812.0,684.36,22127.64,5703.0,16424.64,1-Jun-14,6,June,2014
+Enterprise,France,Montana,Low,1287.0,5,125,160875.0,4826.25,156048.75,154440.0,1608.75,1-Dec-14,12,December,2014
+Enterprise,Germany,Montana,Low,1706.0,5,125,213250.0,6397.5,206852.5,204720.0,2132.5,1-Dec-14,12,December,2014
+Enterprise,Canada,Velo,Low,2009.0,120,125,251125.0,7533.75,243591.25,241080.0,2511.25,1-Oct-14,10,October,2014
+Small Business,United States of America,VTT,Low,2844.0,250,300,853200.0,25596.0,827604.0,711000.0,116604.0,1-Feb-14,2,February,2014
+Channel Partners,Mexico,VTT,Low,1916.0,250,12,22992.0,689.76,22302.24,5748.0,16554.24,1-Apr-14,4,April,2014
+Enterprise,Germany,VTT,Low,1570.0,250,125,196250.0,5887.5,190362.5,188400.0,1962.5,1-Jun-14,6,June,2014
+Small Business,Canada,VTT,Low,1874.0,250,300,562200.0,16866.0,545334.0,468500.0,76834.0,1-Aug-14,8,August,2014
+Midmarket,Germany,VTT,Low,1945.0,250,15,29175.0,875.25,28299.75,19450.0,8849.75,1-Oct-13,10,October,2013
+Channel Partners,Germany,VTT,Low,2479.0,250,12,29748.0,892.44,28855.56,7437.0,21418.56,1-Jan-14,1,January,2014
+Midmarket,Mexico,Montana,Low,2031.0,5,15,30465.0,1218.6,29246.4,20310.0,8936.4,1-Oct-14,10,October,2014
+Small Business,Germany,Carretera,Low,2021.0,3,300,606300.0,24252.0,582048.0,505250.0,76798.0,1-Oct-14,10,October,2014
+Midmarket,Canada,Montana,Low,1967.0,5,15,29505.0,1180.2,28324.8,19670.0,8654.8,1-Mar-14,3,March,2014
+Small Business,Germany,Montana,Low,1859.0,5,300,557700.0,22308.0,535392.0,464750.0,70642.0,1-Aug-14,8,August,2014
+Small Business,Germany,Montana,Low,2021.0,5,300,606300.0,24252.0,582048.0,505250.0,76798.0,1-Oct-14,10,October,2014
+Enterprise,Mexico,Montana,Low,1138.0,5,125,142250.0,5690.0,136560.0,136560.0,0.0,1-Dec-14,12,December,2014
+Channel Partners,United States of America,Velo,Low,1465.0,120,12,17580.0,703.2,16876.8,4395.0,12481.8,1-Mar-14,3,March,2014
+Channel Partners,France,VTT,Low,866.0,250,12,10392.0,415.68,9976.32,2598.0,7378.32,1-May-14,5,May,2014
+Midmarket,Mexico,VTT,Low,1514.0,250,15,22710.0,908.4,21801.6,15140.0,6661.6,1-Oct-13,10,October,2013
+Enterprise,Mexico,Amarilla,Low,1074.0,260,125,134250.0,5370.0,128880.0,128880.0,0.0,1-Apr-14,4,April,2014
+Midmarket,United States of America,Amarilla,Low,671.0,260,15,10065.0,402.6,9662.4,6710.0,2952.4,1-Oct-13,10,October,2013
+Channel Partners,Canada,Velo,Medium,2431.0,120,12,29172.0,1458.6,27713.4,7293.0,20420.4,1-Dec-14,12,December,2014
+Channel Partners,Mexico,Amarilla,Medium,1123.0,260,12,13476.0,673.8,12802.2,3369.0,9433.2,1-Aug-14,8,August,2014
+Channel Partners,France,Carretera,Medium,1865.0,3,12,22380.0,1119.0,21261.0,5595.0,15666.0,1-Feb-14,2,February,2014
+Channel Partners,Germany,Carretera,Medium,1116.0,3,12,13392.0,669.6,12722.4,3348.0,9374.4,1-Feb-14,2,February,2014
+Small Business,United States of America,Carretera,Medium,991.0,3,300,297300.0,14865.0,282435.0,247750.0,34685.0,1-Jun-14,6,June,2014
+Midmarket,Mexico,Carretera,Medium,2791.0,3,15,41865.0,2093.25,39771.75,27910.0,11861.75,1-Nov-14,11,November,2014
+Enterprise,United States of America,Montana,Medium,3627.0,5,125,453375.0,22668.75,430706.25,435240.0,-4533.75,1-Jul-14,7,July,2014
+Channel Partners,Germany,Montana,Medium,2342.0,5,12,28104.0,1405.2,26698.8,7026.0,19672.8,1-Nov-14,11,November,2014
+Small Business,Mexico,Montana,Medium,1100.0,5,300,330000.0,16500.0,313500.0,275000.0,38500.0,1-Dec-13,12,December,2013
+Midmarket,United States of America,Velo,Medium,555.0,120,15,8325.0,416.25,7908.75,5550.0,2358.75,1-Jan-14,1,January,2014
+Midmarket,Mexico,Velo,Medium,2861.0,120,15,42915.0,2145.75,40769.25,28610.0,12159.25,1-Jan-14,1,January,2014
+Enterprise,Germany,Velo,Medium,807.0,120,125,100875.0,5043.75,95831.25,96840.0,-1008.75,1-Feb-14,2,February,2014
+Enterprise,United States of America,Velo,Medium,861.0,120,125,107625.0,5381.25,102243.75,103320.0,-1076.25,1-Oct-14,10,October,2014
+Enterprise,France,Velo,Medium,704.0,120,125,88000.0,4400.0,83600.0,84480.0,-880.0,1-Oct-13,10,October,2013
+Small Business,Germany,Velo,Medium,1250.0,120,300,375000.0,18750.0,356250.0,312500.0,43750.0,1-Dec-14,12,December,2014
+Small Business,Germany,Amarilla,Medium,1250.0,260,300,375000.0,18750.0,356250.0,312500.0,43750.0,1-Dec-14,12,December,2014
+Midmarket,Canada,Carretera,Medium,2844.0,3,15,42660.0,2559.6,40100.4,28440.0,11660.4,1-Jun-14,6,June,2014
+Channel Partners,Mexico,Carretera,Medium,562.0,3,12,6744.0,404.64,6339.36,1686.0,4653.36,1-Sep-14,9,September,2014
+Channel Partners,Canada,Carretera,Medium,2299.0,3,12,27588.0,1655.28,25932.72,6897.0,19035.72,1-Oct-13,10,October,2013
+Midmarket,United States of America,Carretera,Medium,2030.0,3,15,30450.0,1827.0,28623.0,20300.0,8323.0,1-Nov-14,11,November,2014
+Enterprise,Germany,Carretera,Medium,887.0,3,125,110875.0,6652.5,104222.5,106440.0,-2217.5,1-Dec-13,12,December,2013
+Channel Partners,United States of America,Montana,Medium,2723.0,5,12,32676.0,1960.56,30715.44,8169.0,22546.44,1-Nov-14,11,November,2014
+Enterprise,Canada,Velo,Medium,952.0,120,125,119000.0,7140.0,111860.0,114240.0,-2380.0,1-Feb-14,2,February,2014
+Enterprise,United States of America,Velo,Medium,2755.0,120,125,344375.0,20662.5,323712.5,330600.0,-6887.5,1-Feb-14,2,February,2014
+Midmarket,Germany,Velo,Medium,1530.0,120,15,22950.0,1377.0,21573.0,15300.0,6273.0,1-May-14,5,May,2014
+Small Business,France,Velo,Medium,1221.0,120,300,366300.0,21978.0,344322.0,305250.0,39072.0,1-Oct-13,10,October,2013
+Midmarket,Canada,VTT,Medium,2844.0,250,15,42660.0,2559.6,40100.4,28440.0,11660.4,1-Jun-14,6,June,2014
+Small Business,France,VTT,Medium,1221.0,250,300,366300.0,21978.0,344322.0,305250.0,39072.0,1-Oct-13,10,October,2013
+Small Business,Canada,VTT,Medium,2436.0,250,300,730800.0,43848.0,686952.0,609000.0,77952.0,1-Dec-13,12,December,2013
+Enterprise,France,Amarilla,Medium,1987.5,260,125,248437.5,14906.25,233531.25,238500.0,-4968.75,1-Jan-14,1,January,2014
+Midmarket,United States of America,VTT,Medium,1153.0,250,15,17295.0,1037.7,16257.3,11530.0,4727.3,1-Oct-14,10,October,2014
+Channel Partners,Mexico,Carretera,Medium,727.0,3,12,8724.0,610.68,8113.32,2181.0,5932.32,1-Feb-14,2,February,2014
+Channel Partners,Canada,Carretera,Medium,1884.0,3,12,22608.0,1582.56,21025.44,5652.0,15373.44,1-Aug-14,8,August,2014
+Channel Partners,Mexico,Montana,Medium,2340.0,5,12,28080.0,1965.6,26114.4,7020.0,19094.4,1-Jan-14,1,January,2014
+Channel Partners,France,Montana,Medium,2342.0,5,12,28104.0,1967.28,26136.72,7026.0,19110.72,1-Nov-14,11,November,2014
+Midmarket,Canada,Velo,Medium,1262.0,120,15,18930.0,1325.1,17604.9,12620.0,4984.9,1-May-14,5,May,2014
+Channel Partners,France,VTT,Medium,1738.5,250,12,20862.0,1460.34,19401.66,5215.5,14186.16,1-Apr-14,4,April,2014
+Channel Partners,Germany,VTT,Medium,2215.0,250,12,26580.0,1860.6,24719.4,6645.0,18074.4,1-Sep-13,9,September,2013
+Small Business,France,Carretera,Medium,448.0,3,300,134400.0,9408.0,124992.0,112000.0,12992.0,1-Jun-14,6,June,2014
+Small Business,France,Carretera,Medium,2181.0,3,300,654300.0,45801.0,608499.0,545250.0,63249.0,1-Oct-14,10,October,2014
+Small Business,France,Montana,Medium,2181.0,5,300,654300.0,45801.0,608499.0,545250.0,63249.0,1-Oct-14,10,October,2014
+Enterprise,Germany,Montana,Medium,2500.0,5,125,312500.0,21875.0,290625.0,300000.0,-9375.0,1-Nov-13,11,November,2013
+Small Business,France,Velo,Medium,1659.0,120,300,497700.0,34839.0,462861.0,414750.0,48111.0,1-Jul-14,7,July,2014
+Enterprise,Germany,Velo,Medium,2087.0,120,125,260875.0,18261.25,242613.75,250440.0,-7826.25,1-Sep-14,9,September,2014
+Small Business,United States of America,Velo,Medium,1372.0,120,300,411600.0,28812.0,382788.0,343000.0,39788.0,1-Dec-14,12,December,2014
+Channel Partners,Canada,VTT,Medium,3244.5,250,12,38934.0,2725.38,36208.62,9733.5,26475.12,1-Jan-14,1,January,2014
+Small Business,France,VTT,Medium,959.0,250,300,287700.0,20139.0,267561.0,239750.0,27811.0,1-Feb-14,2,February,2014
+Small Business,Mexico,VTT,Medium,2747.0,250,300,824100.0,57687.0,766413.0,686750.0,79663.0,1-Feb-14,2,February,2014
+Enterprise,Canada,Amarilla,Medium,1645.0,260,125,205625.0,14393.75,191231.25,197400.0,-6168.75,1-May-14,5,May,2014
+Enterprise,Germany,Amarilla,Medium,994.0,260,125,124250.0,8697.5,115552.5,119280.0,-3727.5,1-Sep-13,9,September,2013
+Small Business,United States of America,Amarilla,Medium,1372.0,260,300,411600.0,28812.0,382788.0,343000.0,39788.0,1-Dec-14,12,December,2014
+Enterprise,Mexico,Carretera,Medium,1540.0,3,125,192500.0,15400.0,177100.0,184800.0,-7700.0,1-Aug-14,8,August,2014
+Midmarket,France,Carretera,Medium,490.0,3,15,7350.0,588.0,6762.0,4900.0,1862.0,1-Nov-14,11,November,2014
+Midmarket,France,Montana,Medium,2501.0,5,15,37515.0,3001.2,34513.8,25010.0,9503.8,1-Mar-14,3,March,2014
+Small Business,France,Montana,Medium,1562.0,5,300,468600.0,37488.0,431112.0,390500.0,40612.0,1-Aug-14,8,August,2014
+Small Business,Canada,Montana,Medium,1283.0,5,300,384900.0,30792.0,354108.0,320750.0,33358.0,1-Sep-13,9,September,2013
+Midmarket,Germany,Montana,Medium,711.0,5,15,10665.0,853.2,9811.8,7110.0,2701.8,1-Dec-14,12,December,2014
+Channel Partners,Canada,Velo,Medium,598.0,120,12,7176.0,574.08,6601.92,1794.0,4807.92,1-Mar-14,3,March,2014
+Small Business,France,Velo,Medium,386.0,120,300,115800.0,9264.0,106536.0,96500.0,10036.0,1-Nov-13,11,November,2013
+Small Business,Mexico,Velo,Medium,635.0,120,300,190500.0,15240.0,175260.0,158750.0,16510.0,1-Dec-14,12,December,2014
+Small Business,Canada,VTT,Medium,2134.0,250,300,640200.0,51216.0,588984.0,533500.0,55484.0,1-Sep-14,9,September,2014
+Small Business,United States of America,VTT,Medium,808.0,250,300,242400.0,19392.0,223008.0,202000.0,21008.0,1-Dec-13,12,December,2013
+Small Business,Mexico,Amarilla,Medium,2460.0,260,300,738000.0,59040.0,678960.0,615000.0,63960.0,1-Jun-14,6,June,2014
+Midmarket,Germany,Amarilla,Medium,711.0,260,15,10665.0,853.2,9811.8,7110.0,2701.8,1-Dec-14,12,December,2014
+Channel Partners,Mexico,Amarilla,Medium,1375.0,260,12,16500.0,1320.0,15180.0,4125.0,11055.0,1-Dec-13,12,December,2013
+Small Business,Mexico,Amarilla,Medium,635.0,260,300,190500.0,15240.0,175260.0,158750.0,16510.0,1-Dec-14,12,December,2014
+Small Business,Canada,Carretera,Medium,1094.0,3,300,328200.0,29538.0,298662.0,273500.0,25162.0,1-Jun-14,6,June,2014
+Channel Partners,Mexico,Carretera,Medium,367.0,3,12,4404.0,396.36,4007.64,1101.0,2906.64,1-Oct-13,10,October,2013
+Small Business,Canada,Montana,Medium,3802.5,5,300,1140750.0,102667.5,1038082.5,950625.0,87457.5,1-Apr-14,4,April,2014
+Small Business,France,Montana,Medium,322.0,5,300,96600.0,8694.0,87906.0,80500.0,7406.0,1-Sep-13,9,September,2013
+Channel Partners,Canada,Montana,Medium,2321.0,5,12,27852.0,2506.68,25345.32,6963.0,18382.32,1-Nov-14,11,November,2014
+Enterprise,France,Montana,Medium,1857.0,5,125,232125.0,20891.25,211233.75,222840.0,-11606.25,1-Nov-13,11,November,2013
+Enterprise,United States of America,Montana,Medium,2797.0,5,125,349625.0,31466.25,318158.75,335640.0,-17481.25,1-Dec-14,12,December,2014
+Small Business,Germany,Montana,Medium,334.0,5,300,100200.0,9018.0,91182.0,83500.0,7682.0,1-Dec-13,12,December,2013
+Midmarket,Mexico,Velo,Medium,245.0,120,15,3675.0,330.75,3344.25,2450.0,894.25,1-May-14,5,May,2014
+Small Business,Canada,Velo,Medium,3793.5,120,300,1138050.0,102424.5,1035625.5,948375.0,87250.5,1-Jul-14,7,July,2014
+Enterprise,Canada,Velo,Medium,567.0,120,125,70875.0,6378.75,64496.25,68040.0,-3543.75,1-Sep-14,9,September,2014
+Enterprise,Mexico,Velo,Medium,2110.0,120,125,263750.0,23737.5,240012.5,253200.0,-13187.5,1-Sep-14,9,September,2014
+Channel Partners,United States of America,VTT,Medium,1956.0,250,12,23472.0,2112.48,21359.52,5868.0,15491.52,1-Jan-14,1,January,2014
+Small Business,Germany,VTT,Medium,2659.0,250,300,797700.0,71793.0,725907.0,664750.0,61157.0,1-Feb-14,2,February,2014
+Channel Partners,Germany,VTT,Medium,880.0,250,12,10560.0,950.4,9609.6,2640.0,6969.6,1-May-14,5,May,2014
+Small Business,United States of America,VTT,Medium,1867.0,250,300,560100.0,50409.0,509691.0,466750.0,42941.0,1-Sep-14,9,September,2014
+Channel Partners,France,VTT,Medium,2234.0,250,12,26808.0,2412.72,24395.28,6702.0,17693.28,1-Sep-13,9,September,2013
+Midmarket,France,VTT,Medium,1227.0,250,15,18405.0,1656.45,16748.55,12270.0,4478.55,1-Oct-14,10,October,2014
+Enterprise,Mexico,VTT,Medium,877.0,250,125,109625.0,9866.25,99758.75,105240.0,-5481.25,1-Nov-14,11,November,2014
+Midmarket,Germany,Amarilla,Medium,970.0,260,15,14550.0,1309.5,13240.5,9700.0,3540.5,1-Nov-13,11,November,2013
+Channel Partners,Germany,Carretera,Medium,1580.0,3,12,18960.0,1706.4,17253.6,4740.0,12513.6,1-Sep-14,9,September,2014
+Channel Partners,France,Velo,Medium,1967.0,120,12,23604.0,2124.36,21479.64,5901.0,15578.64,1-Mar-14,3,March,2014
+Midmarket,Mexico,Velo,Medium,2628.0,120,15,39420.0,3547.8,35872.2,26280.0,9592.2,1-Apr-14,4,April,2014
+Midmarket,Canada,Amarilla,Medium,1630.5,260,15,24457.5,2201.175,22256.325,16305.0,5951.325,1-Jul-14,7,July,2014
+Channel Partners,France,Amarilla,Medium,306.0,260,12,3672.0,330.48,3341.52,918.0,2423.52,1-Dec-13,12,December,2013
+Channel Partners,United States of America,Carretera,High,386.0,3,12,4632.0,463.2,4168.8,1158.0,3010.8,1-Oct-13,10,October,2013
+Enterprise,United States of America,Carretera,High,3445.5,3,125,430687.5,43068.75,387618.75,413460.0,-25841.25,1-Apr-14,4,April,2014
+Enterprise,France,Carretera,High,1482.0,3,125,185250.0,18525.0,166725.0,177840.0,-11115.0,1-Dec-13,12,December,2013
+Enterprise,United States of America,Montana,High,1804.0,5,125,225500.0,22550.0,202950.0,216480.0,-13530.0,1-Nov-13,11,November,2013
+Midmarket,France,Montana,High,2072.0,5,15,31080.0,3108.0,27972.0,20720.0,7252.0,1-Dec-14,12,December,2014
+Midmarket,Germany,Velo,High,681.0,120,15,10215.0,1021.5,9193.5,6810.0,2383.5,1-Jan-14,1,January,2014
+Midmarket,Germany,Velo,High,510.0,120,15,7650.0,765.0,6885.0,5100.0,1785.0,1-Apr-14,4,April,2014
+Midmarket,United States of America,Velo,High,790.0,120,15,11850.0,1185.0,10665.0,7900.0,2765.0,1-May-14,5,May,2014
+Enterprise,United States of America,Velo,High,1596.0,120,125,199500.0,19950.0,179550.0,191520.0,-11970.0,1-Sep-14,9,September,2014
+Small Business,United States of America,Velo,High,2294.0,120,300,688200.0,68820.0,619380.0,573500.0,45880.0,1-Oct-13,10,October,2013
+Enterprise,Canada,Velo,High,1916.0,120,125,239500.0,23950.0,215550.0,229920.0,-14370.0,1-Dec-13,12,December,2013
+Small Business,France,Velo,High,853.0,120,300,255900.0,25590.0,230310.0,213250.0,17060.0,1-Dec-14,12,December,2014
+Enterprise,Mexico,VTT,High,341.0,250,125,42625.0,4262.5,38362.5,40920.0,-2557.5,1-May-14,5,May,2014
+Midmarket,Mexico,VTT,High,641.0,250,15,9615.0,961.5,8653.5,6410.0,2243.5,1-Jul-14,7,July,2014
+Small Business,Mexico,VTT,High,432.0,250,300,129600.0,12960.0,116640.0,108000.0,8640.0,1-Sep-14,9,September,2014
+Small Business,United States of America,VTT,High,2294.0,250,300,688200.0,68820.0,619380.0,573500.0,45880.0,1-Oct-13,10,October,2013
+Midmarket,France,VTT,High,2167.0,250,15,32505.0,3250.5,29254.5,21670.0,7584.5,1-Oct-13,10,October,2013
+Enterprise,Canada,VTT,High,2529.0,250,125,316125.0,31612.5,284512.5,303480.0,-18967.5,1-Nov-14,11,November,2014
+Enterprise,United States of America,Amarilla,High,579.0,260,125,72375.0,7237.5,65137.5,69480.0,-4342.5,1-Jan-14,1,January,2014
+Small Business,United States of America,Amarilla,High,2993.0,260,300,897900.0,89790.0,808110.0,748250.0,59860.0,1-Mar-14,3,March,2014
+Channel Partners,Canada,Amarilla,High,3520.5,260,12,42246.0,4224.6,38021.4,10561.5,27459.9,1-Apr-14,4,April,2014
+Channel Partners,Germany,Amarilla,High,2574.0,260,12,30888.0,3088.8,27799.2,7722.0,20077.2,1-Aug-14,8,August,2014
+Midmarket,France,Amarilla,High,2072.0,260,15,31080.0,3108.0,27972.0,20720.0,7252.0,1-Dec-14,12,December,2014
+Small Business,France,Amarilla,High,853.0,260,300,255900.0,25590.0,230310.0,213250.0,17060.0,1-Dec-14,12,December,2014
+Channel Partners,France,Carretera,High,1198.0,3,12,14376.0,1581.36,12794.64,3594.0,9200.64,1-Oct-13,10,October,2013
+Midmarket,Canada,Velo,High,384.0,120,15,5760.0,633.6,5126.4,3840.0,1286.4,1-Jan-14,1,January,2014
+Channel Partners,Germany,Velo,High,472.0,120,12,5664.0,623.04,5040.96,1416.0,3624.96,1-Oct-14,10,October,2014
+Channel Partners,Mexico,VTT,High,1005.0,250,12,12060.0,1326.6,10733.4,3015.0,7718.4,1-Sep-13,9,September,2013
+Midmarket,United States of America,Amarilla,High,3199.5,260,15,47992.5,5279.175,42713.325,31995.0,10718.325,1-Jul-14,7,July,2014
+Channel Partners,Germany,Amarilla,High,472.0,260,12,5664.0,623.04,5040.96,1416.0,3624.96,1-Oct-14,10,October,2014
+Channel Partners,Canada,Carretera,High,1937.0,3,12,23244.0,2556.84,20687.16,5811.0,14876.16,1-Feb-14,2,February,2014
+Small Business,Germany,Carretera,High,2811.0,3,300,843300.0,92763.0,750537.0,702750.0,47787.0,1-Jul-14,7,July,2014
+Enterprise,France,Carretera,High,2441.0,3,125,305125.0,33563.75,271561.25,292920.0,-21358.75,1-Oct-14,10,October,2014
+Midmarket,Canada,Carretera,High,1560.0,3,15,23400.0,2574.0,20826.0,15600.0,5226.0,1-Nov-13,11,November,2013
+Midmarket,Mexico,Montana,High,2157.0,5,15,32355.0,3559.05,28795.95,21570.0,7225.95,1-Dec-14,12,December,2014
+Midmarket,Mexico,Velo,High,655.0,120,15,9825.0,1080.75,8744.25,6550.0,2194.25,1-Sep-13,9,September,2013
+Channel Partners,France,VTT,High,1734.0,250,12,20808.0,2288.88,18519.12,5202.0,13317.12,1-Jan-14,1,January,2014
+Enterprise,Mexico,VTT,High,554.0,250,125,69250.0,7617.5,61632.5,66480.0,-4847.5,1-Jan-14,1,January,2014
+Enterprise,Germany,Amarilla,High,3165.0,260,125,395625.0,43518.75,352106.25,379800.0,-27693.75,1-Jan-14,1,January,2014
+Enterprise,France,Amarilla,High,1433.0,260,125,179125.0,19703.75,159421.25,171960.0,-12538.75,1-May-14,5,May,2014
+Enterprise,Mexico,Amarilla,High,947.0,260,125,118375.0,13021.25,105353.75,113640.0,-8286.25,1-Sep-13,9,September,2013
+Midmarket,Mexico,Amarilla,High,2157.0,260,15,32355.0,3559.05,28795.95,21570.0,7225.95,1-Dec-14,12,December,2014
+Enterprise,Canada,Carretera,High,2416.0,3,125,302000.0,36240.0,265760.0,289920.0,-24160.0,1-Sep-13,9,September,2013
+Enterprise,Mexico,Carretera,High,2156.0,3,125,269500.0,32340.0,237160.0,258720.0,-21560.0,1-Oct-14,10,October,2014
+Midmarket,Canada,Carretera,High,2689.0,3,15,40335.0,4840.2,35494.8,26890.0,8604.8,1-Nov-14,11,November,2014
+Midmarket,United States of America,Montana,High,677.0,5,15,10155.0,1218.6,8936.4,6770.0,2166.4,1-Mar-14,3,March,2014
+Small Business,France,Montana,High,1773.0,5,300,531900.0,63828.0,468072.0,443250.0,24822.0,1-Apr-14,4,April,2014
+Small Business,France,Montana,High,1186.0,5,300,355800.0,42696.0,313104.0,296500.0,16604.0,1-Dec-13,12,December,2013
+Channel Partners,Canada,VTT,High,2109.0,250,12,25308.0,3036.96,22271.04,6327.0,15944.04,1-May-14,5,May,2014
+Midmarket,France,VTT,High,3874.5,250,15,58117.5,6974.1,51143.4,38745.0,12398.4,1-Jul-14,7,July,2014
+Enterprise,United States of America,VTT,High,2387.0,250,125,298375.0,35805.0,262570.0,286440.0,-23870.0,1-Nov-14,11,November,2014
+Midmarket,United States of America,Amarilla,High,2548.0,260,15,38220.0,4586.4,33633.6,25480.0,8153.6,1-Nov-13,11,November,2013
+Channel Partners,Mexico,Montana,High,2661.0,5,12,31932.0,3831.84,28100.16,7983.0,20117.16,1-May-14,5,May,2014
+Channel Partners,Canada,Amarilla,High,2761.0,260,12,33132.0,3975.84,29156.16,8283.0,20873.16,1-Sep-13,9,September,2013
+Midmarket,United States of America,Carretera,High,2567.0,3,15,38505.0,5005.65,33499.35,25670.0,7829.35,1-Jun-14,6,June,2014
+Midmarket,United States of America,VTT,High,2567.0,250,15,38505.0,5005.65,33499.35,25670.0,7829.35,1-Jun-14,6,June,2014
+Channel Partners,Mexico,Montana,High,604.0,5,12,7248.0,942.24,6305.76,1812.0,4493.76,1-Jun-14,6,June,2014
+Midmarket,France,Velo,High,3997.5,120,15,59962.5,7795.125,52167.375,39975.0,12192.375,1-Jan-14,1,January,2014
+Channel Partners,Mexico,Velo,High,604.0,120,12,7248.0,942.24,6305.76,1812.0,4493.76,1-Jun-14,6,June,2014
+Midmarket,Germany,Velo,High,660.0,120,15,9900.0,1287.0,8613.0,6600.0,2013.0,1-Sep-13,9,September,2013
+Channel Partners,Mexico,Velo,High,410.0,120,12,4920.0,639.6,4280.4,1230.0,3050.4,1-Oct-14,10,October,2014
+Small Business,Mexico,Velo,High,2605.0,120,300,781500.0,101595.0,679905.0,651250.0,28655.0,1-Nov-13,11,November,2013
+Channel Partners,Germany,Velo,High,1013.0,120,12,12156.0,1580.28,10575.72,3039.0,7536.72,1-Dec-14,12,December,2014
+Enterprise,Canada,VTT,High,1583.0,250,125,197875.0,25723.75,172151.25,189960.0,-17808.75,1-Jun-14,6,June,2014
+Midmarket,Canada,VTT,High,1565.0,250,15,23475.0,3051.75,20423.25,15650.0,4773.25,1-Oct-14,10,October,2014
+Enterprise,Canada,Amarilla,High,1659.0,260,125,207375.0,26958.75,180416.25,199080.0,-18663.75,1-Jan-14,1,January,2014
+Channel Partners,Mexico,Amarilla,High,410.0,260,12,4920.0,639.6,4280.4,1230.0,3050.4,1-Oct-14,10,October,2014
+Channel Partners,Germany,Amarilla,High,1770.0,260,12,21240.0,2761.2,18478.8,5310.0,13168.8,1-Dec-13,12,December,2013
+Channel Partners,France,Amarilla,High,1393.0,260,12,16716.0,2340.24,14375.76,4179.0,10196.76,1-Oct-14,10,October,2014
+Channel Partners,United States of America,Amarilla,High,2015.0,260,12,24180.0,3385.2,20794.8,6045.0,14749.8,1-Dec-13,12,December,2013
+Small Business,Mexico,Carretera,High,801.0,3,300,240300.0,33642.0,206658.0,200250.0,6408.0,1-Jul-14,7,July,2014
+Enterprise,France,Carretera,High,1023.0,3,125,127875.0,17902.5,109972.5,122760.0,-12787.5,1-Sep-13,9,September,2013
+Small Business,Canada,Carretera,High,1496.0,3,300,448800.0,62832.0,385968.0,374000.0,11968.0,1-Oct-14,10,October,2014
+Small Business,United States of America,Carretera,High,1010.0,3,300,303000.0,42420.0,260580.0,252500.0,8080.0,1-Oct-14,10,October,2014
+Midmarket,Germany,Carretera,High,1513.0,3,15,22695.0,3177.3,19517.7,15130.0,4387.7,1-Nov-14,11,November,2014
+Midmarket,Canada,Carretera,High,2300.0,3,15,34500.0,4830.0,29670.0,23000.0,6670.0,1-Dec-14,12,December,2014
+Enterprise,Mexico,Carretera,High,2821.0,3,125,352625.0,49367.5,303257.5,338520.0,-35262.5,1-Dec-13,12,December,2013
+Midmarket,Canada,Montana,High,2300.0,5,15,34500.0,4830.0,29670.0,23000.0,6670.0,1-Dec-14,12,December,2014
+Enterprise,Mexico,Velo,High,1575.0,120,125,196875.0,27562.5,169312.5,189000.0,-19687.5,1-Feb-14,2,February,2014
+Small Business,United States of America,Velo,High,2460.0,120,300,738000.0,103320.0,634680.0,615000.0,19680.0,1-Jul-14,7,July,2014
+Small Business,Canada,Velo,High,269.0,120,300,80700.0,11298.0,69402.0,67250.0,2152.0,1-Oct-13,10,October,2013
+Small Business,Germany,Velo,High,2536.0,120,300,760800.0,106512.0,654288.0,634000.0,20288.0,1-Nov-13,11,November,2013
+Small Business,United States of America,VTT,High,2541.0,250,300,762300.0,106722.0,655578.0,635250.0,20328.0,1-Aug-14,8,August,2014
+Small Business,Canada,VTT,High,269.0,250,300,80700.0,11298.0,69402.0,67250.0,2152.0,1-Oct-13,10,October,2013
+Small Business,Canada,VTT,High,1496.0,250,300,448800.0,62832.0,385968.0,374000.0,11968.0,1-Oct-14,10,October,2014
+Small Business,United States of America,VTT,High,1010.0,250,300,303000.0,42420.0,260580.0,252500.0,8080.0,1-Oct-14,10,October,2014
+Small Business,Canada,Amarilla,High,888.0,260,300,266400.0,37296.0,229104.0,222000.0,7104.0,1-Mar-14,3,March,2014
+Enterprise,United States of America,Amarilla,High,2844.0,260,125,355500.0,49770.0,305730.0,341280.0,-35550.0,1-May-14,5,May,2014
+Channel Partners,France,Amarilla,High,2475.0,260,12,29700.0,4158.0,25542.0,7425.0,18117.0,1-Aug-14,8,August,2014
+Midmarket,Canada,Amarilla,High,1743.0,260,15,26145.0,3660.3,22484.7,17430.0,5054.7,1-Oct-13,10,October,2013
+Channel Partners,United States of America,Amarilla,High,2914.0,260,12,34968.0,4895.52,30072.48,8742.0,21330.48,1-Oct-14,10,October,2014
+Midmarket,Mexico,Amarilla,High,1870.0,260,15,28050.0,3927.0,24123.0,18700.0,5423.0,1-Nov-13,11,November,2013
+Enterprise,France,Carretera,High,1174.0,3,125,146750.0,22012.5,124737.5,140880.0,-16142.5,1-Aug-14,8,August,2014
+Enterprise,Germany,Carretera,High,2767.0,3,125,345875.0,51881.25,293993.75,332040.0,-38046.25,1-Aug-14,8,August,2014
+Enterprise,Germany,Carretera,High,1085.0,3,125,135625.0,20343.75,115281.25,130200.0,-14918.75,1-Oct-14,10,October,2014
+Small Business,Mexico,Montana,High,546.0,5,300,163800.0,24570.0,139230.0,136500.0,2730.0,1-Oct-14,10,October,2014
+Channel Partners,Mexico,Velo,High,500.0,120,12,6000.0,900.0,5100.0,1500.0,3600.0,1-Mar-14,3,March,2014
+Midmarket,France,Velo,High,2826.0,120,15,42390.0,6358.5,36031.5,28260.0,7771.5,1-May-14,5,May,2014
+Enterprise,France,Velo,High,663.0,120,125,82875.0,12431.25,70443.75,79560.0,-9116.25,1-Sep-14,9,September,2014
+Small Business,United States of America,Velo,High,2574.0,120,300,772200.0,115830.0,656370.0,643500.0,12870.0,1-Nov-13,11,November,2013
+Enterprise,United States of America,Velo,High,2438.0,120,125,304750.0,45712.5,259037.5,292560.0,-33522.5,1-Dec-13,12,December,2013
+Channel Partners,United States of America,Velo,High,914.0,120,12,10968.0,1645.2,9322.8,2742.0,6580.8,1-Dec-14,12,December,2014
+Midmarket,Germany,VTT,High,492.0,250,15,7380.0,1107.0,6273.0,4920.0,1353.0,1-Jul-14,7,July,2014
+Midmarket,Germany,VTT,High,1175.0,250,15,17625.0,2643.75,14981.25,11750.0,3231.25,1-Oct-14,10,October,2014
+Enterprise,Canada,VTT,High,2954.0,250,125,369250.0,55387.5,313862.5,354480.0,-40617.5,1-Nov-13,11,November,2013
+Enterprise,Germany,VTT,High,552.0,250,125,69000.0,10350.0,58650.0,66240.0,-7590.0,1-Nov-14,11,November,2014
+Small Business,France,Amarilla,High,2475.0,260,300,742500.0,111375.0,631125.0,618750.0,12375.0,1-Mar-14,3,March,2014
+Small Business,Mexico,Amarilla,High,546.0,260,300,163800.0,24570.0,139230.0,136500.0,2730.0,1-Oct-14,10,October,2014
+Channel Partners,United States of America,VTT,High,1806.0,250,12,21672.0,3250.8,18421.2,5418.0,13003.2,1-May-14,5,May,2014
+Midmarket,Mexico,Paseo,None,974.0,10,15,14610.0,0.0,14610.0,9740.0,4870.0,1-Feb-14,2,February,2014
+Channel Partners,Canada,Paseo,None,2518.0,10,12,30216.0,0.0,30216.0,7554.0,22662.0,1-Jun-14,6,June,2014
+Channel Partners,Germany,Paseo,None,367.0,10,12,4404.0,0.0,4404.0,1101.0,3303.0,1-Jul-14,7,July,2014
+Midmarket,France,Paseo,None,549.0,10,15,8235.0,0.0,8235.0,5490.0,2745.0,1-Sep-13,9,September,2013
+Small Business,Mexico,Paseo,None,788.0,10,300,236400.0,0.0,236400.0,197000.0,39400.0,1-Sep-13,9,September,2013
+Midmarket,Mexico,Paseo,None,2472.0,10,15,37080.0,0.0,37080.0,24720.0,12360.0,1-Sep-14,9,September,2014
+Channel Partners,United States of America,Paseo,None,912.0,10,12,10944.0,0.0,10944.0,2736.0,8208.0,1-Nov-13,11,November,2013
+Midmarket,Canada,Paseo,None,2152.0,10,15,32280.0,0.0,32280.0,21520.0,10760.0,1-Dec-13,12,December,2013
+Midmarket,France,Paseo,Low,2296.0,10,15,34440.0,344.4,34095.6,22960.0,11135.6,1-Feb-14,2,February,2014
+Midmarket,United States of America,Paseo,Low,1514.0,10,15,22710.0,227.1,22482.9,15140.0,7342.9,1-Feb-14,2,February,2014
+Enterprise,United States of America,Paseo,Low,727.0,10,125,90875.0,908.75,89966.25,87240.0,2726.25,1-Jun-14,6,June,2014
+Enterprise,France,Paseo,Low,787.0,10,125,98375.0,983.75,97391.25,94440.0,2951.25,1-Jun-14,6,June,2014
+Enterprise,Mexico,Paseo,Low,1823.0,10,125,227875.0,2278.75,225596.25,218760.0,6836.25,1-Jul-14,7,July,2014
+Midmarket,Germany,Paseo,Low,747.0,10,15,11205.0,112.05,11092.95,7470.0,3622.95,1-Sep-14,9,September,2014
+Channel Partners,Germany,Paseo,Low,766.0,10,12,9192.0,91.92,9100.08,2298.0,6802.08,1-Oct-13,10,October,2013
+Small Business,United States of America,Paseo,Low,2905.0,10,300,871500.0,8715.0,862785.0,726250.0,136535.0,1-Nov-14,11,November,2014
+Midmarket,Canada,Paseo,Low,2363.0,10,15,35445.0,708.9,34736.1,23630.0,11106.1,1-Feb-14,2,February,2014
+Small Business,France,Paseo,Low,918.0,10,300,275400.0,5508.0,269892.0,229500.0,40392.0,1-May-14,5,May,2014
+Small Business,Germany,Paseo,Low,1728.0,10,300,518400.0,10368.0,508032.0,432000.0,76032.0,1-May-14,5,May,2014
+Channel Partners,United States of America,Paseo,Low,1142.0,10,12,13704.0,274.08,13429.92,3426.0,10003.92,1-Jun-14,6,June,2014
+Enterprise,Mexico,Paseo,Low,662.0,10,125,82750.0,1655.0,81095.0,79440.0,1655.0,1-Jun-14,6,June,2014
+Channel Partners,Canada,Paseo,Low,1295.0,10,12,15540.0,310.8,15229.2,3885.0,11344.2,1-Oct-14,10,October,2014
+Enterprise,Germany,Paseo,Low,809.0,10,125,101125.0,2022.5,99102.5,97080.0,2022.5,1-Oct-13,10,October,2013
+Enterprise,Mexico,Paseo,Low,2145.0,10,125,268125.0,5362.5,262762.5,257400.0,5362.5,1-Oct-13,10,October,2013
+Channel Partners,France,Paseo,Low,1785.0,10,12,21420.0,428.4,20991.6,5355.0,15636.6,1-Nov-13,11,November,2013
+Small Business,Canada,Paseo,Low,1916.0,10,300,574800.0,11496.0,563304.0,479000.0,84304.0,1-Dec-14,12,December,2014
+Enterprise,Canada,Paseo,Low,2729.0,10,125,341125.0,6822.5,334302.5,327480.0,6822.5,1-Dec-14,12,December,2014
+Midmarket,United States of America,Paseo,Low,1925.0,10,15,28875.0,577.5,28297.5,19250.0,9047.5,1-Dec-13,12,December,2013
+Channel Partners,France,Paseo,Low,1055.0,10,12,12660.0,253.2,12406.8,3165.0,9241.8,1-Dec-14,12,December,2014
+Channel Partners,Mexico,Paseo,Low,1084.0,10,12,13008.0,260.16,12747.84,3252.0,9495.84,1-Dec-14,12,December,2014
+Small Business,France,Paseo,Low,2434.5,10,300,730350.0,21910.5,708439.5,608625.0,99814.5,1-Jan-14,1,January,2014
+Enterprise,Canada,Paseo,Low,1774.0,10,125,221750.0,6652.5,215097.5,212880.0,2217.5,1-Mar-14,3,March,2014
+Channel Partners,France,Paseo,Low,1901.0,10,12,22812.0,684.36,22127.64,5703.0,16424.64,1-Jun-14,6,June,2014
+Small Business,Germany,Paseo,Low,689.0,10,300,206700.0,6201.0,200499.0,172250.0,28249.0,1-Jun-14,6,June,2014
+Enterprise,Germany,Paseo,Low,1570.0,10,125,196250.0,5887.5,190362.5,188400.0,1962.5,1-Jun-14,6,June,2014
+Channel Partners,United States of America,Paseo,Low,1369.5,10,12,16434.0,493.02,15940.98,4108.5,11832.48,1-Jul-14,7,July,2014
+Enterprise,Canada,Paseo,Low,2009.0,10,125,251125.0,7533.75,243591.25,241080.0,2511.25,1-Oct-14,10,October,2014
+Midmarket,Germany,Paseo,Low,1945.0,10,15,29175.0,875.25,28299.75,19450.0,8849.75,1-Oct-13,10,October,2013
+Enterprise,France,Paseo,Low,1287.0,10,125,160875.0,4826.25,156048.75,154440.0,1608.75,1-Dec-14,12,December,2014
+Enterprise,Germany,Paseo,Low,1706.0,10,125,213250.0,6397.5,206852.5,204720.0,2132.5,1-Dec-14,12,December,2014
+Midmarket,Mexico,Paseo,Low,2031.0,10,15,30465.0,1218.6,29246.4,20310.0,8936.4,1-Oct-14,10,October,2014
+Midmarket,France,Paseo,Low,2261.0,10,15,33915.0,1356.6,32558.4,22610.0,9948.4,1-Dec-13,12,December,2013
+Enterprise,Germany,Paseo,Low,795.0,10,125,99375.0,3975.0,95400.0,95400.0,0.0,1-Mar-14,3,March,2014
+Small Business,Germany,Paseo,Low,1414.5,10,300,424350.0,16974.0,407376.0,353625.0,53751.0,1-Apr-14,4,April,2014
+Small Business,United States of America,Paseo,Low,2918.0,10,300,875400.0,35016.0,840384.0,729500.0,110884.0,1-May-14,5,May,2014
+Enterprise,France,Paseo,Low,2988.0,10,125,373500.0,14940.0,358560.0,358560.0,0.0,1-Jul-14,7,July,2014
+Midmarket,Canada,Paseo,Low,218.0,10,15,3270.0,130.8,3139.2,2180.0,959.2,1-Sep-14,9,September,2014
+Midmarket,United States of America,Paseo,Low,671.0,10,15,10065.0,402.6,9662.4,6710.0,2952.4,1-Oct-13,10,October,2013
+Midmarket,Mexico,Paseo,Low,1514.0,10,15,22710.0,908.4,21801.6,15140.0,6661.6,1-Oct-13,10,October,2013
+Enterprise,Mexico,Paseo,Low,1138.0,10,125,142250.0,5690.0,136560.0,136560.0,0.0,1-Dec-14,12,December,2014
+Channel Partners,Canada,Paseo,Medium,2431.0,10,12,29172.0,1458.6,27713.4,7293.0,20420.4,1-Dec-14,12,December,2014
+Enterprise,United States of America,Paseo,Medium,2992.0,10,125,374000.0,18700.0,355300.0,359040.0,-3740.0,1-Mar-14,3,March,2014
+Enterprise,France,Paseo,Medium,2385.0,10,125,298125.0,14906.25,283218.75,286200.0,-2981.25,1-Mar-14,3,March,2014
+Small Business,Mexico,Paseo,Medium,1607.0,10,300,482100.0,24105.0,457995.0,401750.0,56245.0,1-Apr-14,4,April,2014
+Small Business,United States of America,Paseo,Medium,991.0,10,300,297300.0,14865.0,282435.0,247750.0,34685.0,1-Jun-14,6,June,2014
+Midmarket,France,Paseo,Medium,2620.0,10,15,39300.0,1965.0,37335.0,26200.0,11135.0,1-Sep-14,9,September,2014
+Enterprise,United States of America,Paseo,Medium,861.0,10,125,107625.0,5381.25,102243.75,103320.0,-1076.25,1-Oct-14,10,October,2014
+Enterprise,France,Paseo,Medium,704.0,10,125,88000.0,4400.0,83600.0,84480.0,-880.0,1-Oct-13,10,October,2013
+Midmarket,Germany,Paseo,Medium,2116.0,10,15,31740.0,1587.0,30153.0,21160.0,8993.0,1-Dec-13,12,December,2013
+Midmarket,France,Paseo,Medium,3801.0,10,15,57015.0,3420.9,53594.1,38010.0,15584.1,1-Apr-14,4,April,2014
+Channel Partners,Canada,Paseo,Medium,2299.0,10,12,27588.0,1655.28,25932.72,6897.0,19035.72,1-Oct-13,10,October,2013
+Midmarket,United States of America,Paseo,Medium,2198.0,10,15,32970.0,1978.2,30991.8,21980.0,9011.8,1-Aug-14,8,August,2014
+Midmarket,Germany,Paseo,Medium,1743.0,10,15,26145.0,1568.7,24576.3,17430.0,7146.3,1-Aug-14,8,August,2014
+Midmarket,United States of America,Paseo,Medium,1153.0,10,15,17295.0,1037.7,16257.3,11530.0,4727.3,1-Oct-14,10,October,2014
+Small Business,Canada,Paseo,Medium,1702.0,10,300,510600.0,35742.0,474858.0,425500.0,49358.0,1-May-14,5,May,2014
+Small Business,France,Paseo,Medium,448.0,10,300,134400.0,9408.0,124992.0,112000.0,12992.0,1-Jun-14,6,June,2014
+Enterprise,Germany,Paseo,Medium,3513.0,10,125,439125.0,30738.75,408386.25,421560.0,-13173.75,1-Jul-14,7,July,2014
+Midmarket,France,Paseo,Medium,2101.0,10,15,31515.0,2206.05,29308.95,21010.0,8298.95,1-Aug-14,8,August,2014
+Midmarket,United States of America,Paseo,Medium,2931.0,10,15,43965.0,3077.55,40887.45,29310.0,11577.45,1-Sep-13,9,September,2013
+Small Business,Germany,Paseo,Medium,1123.0,10,300,336900.0,23583.0,313317.0,280750.0,32567.0,1-Sep-13,9,September,2013
+Small Business,Canada,Paseo,Medium,1404.0,10,300,421200.0,29484.0,391716.0,351000.0,40716.0,1-Nov-13,11,November,2013
+Channel Partners,Mexico,Paseo,Medium,2763.0,10,12,33156.0,2320.92,30835.08,8289.0,22546.08,1-Nov-13,11,November,2013
+Enterprise,Mexico,Paseo,Medium,1114.0,10,125,139250.0,11140.0,128110.0,133680.0,-5570.0,1-Mar-14,3,March,2014
+Small Business,Mexico,Paseo,Medium,2460.0,10,300,738000.0,59040.0,678960.0,615000.0,63960.0,1-Jun-14,6,June,2014
+Small Business,Mexico,Paseo,Medium,2565.0,10,300,769500.0,69255.0,700245.0,641250.0,58995.0,1-Jan-14,1,January,2014
+Midmarket,United States of America,Paseo,Medium,3675.0,10,15,55125.0,4961.25,50163.75,36750.0,13413.75,1-Apr-14,4,April,2014
+Small Business,Canada,Paseo,Medium,1094.0,10,300,328200.0,29538.0,298662.0,273500.0,25162.0,1-Jun-14,6,June,2014
+Midmarket,France,Paseo,Medium,1227.0,10,15,18405.0,1656.45,16748.55,12270.0,4478.55,1-Oct-14,10,October,2014
+Channel Partners,Mexico,Paseo,Medium,367.0,10,12,4404.0,396.36,4007.64,1101.0,2906.64,1-Oct-13,10,October,2013
+Small Business,France,Paseo,Medium,1324.0,10,300,397200.0,35748.0,361452.0,331000.0,30452.0,1-Nov-14,11,November,2014
+Channel Partners,Germany,Paseo,Medium,1775.0,10,12,21300.0,1917.0,19383.0,5325.0,14058.0,1-Nov-13,11,November,2013
+Enterprise,United States of America,Paseo,Medium,2797.0,10,125,349625.0,31466.25,318158.75,335640.0,-17481.25,1-Dec-14,12,December,2014
+Channel Partners,United States of America,Paseo,High,386.0,10,12,4632.0,463.2,4168.8,1158.0,3010.8,1-Oct-13,10,October,2013
+Small Business,Mexico,Paseo,High,591.0,10,300,177300.0,17730.0,159570.0,147750.0,11820.0,1-May-14,5,May,2014
+Midmarket,France,Paseo,High,2167.0,10,15,32505.0,3250.5,29254.5,21670.0,7584.5,1-Oct-13,10,October,2013
+Channel Partners,France,Paseo,High,1198.0,10,12,14376.0,1581.36,12794.64,3594.0,9200.64,1-Oct-13,10,October,2013
+Small Business,Canada,Paseo,High,873.0,10,300,261900.0,28809.0,233091.0,218250.0,14841.0,1-Jan-14,1,January,2014
+Channel Partners,Canada,Paseo,High,4026.0,10,12,48312.0,5314.32,42997.68,12078.0,30919.68,1-Jul-14,7,July,2014
+Channel Partners,France,Paseo,High,2425.5,10,12,29106.0,3201.66,25904.34,7276.5,18627.84,1-Jul-14,7,July,2014
+Midmarket,Mexico,Paseo,High,1984.0,10,15,29760.0,3273.6,26486.4,19840.0,6646.4,1-Aug-14,8,August,2014
+Enterprise,France,Paseo,High,2441.0,10,125,305125.0,33563.75,271561.25,292920.0,-21358.75,1-Oct-14,10,October,2014
+Small Business,Canada,Paseo,High,1366.0,10,300,409800.0,45078.0,364722.0,341500.0,23222.0,1-Nov-14,11,November,2014
+Small Business,United States of America,Paseo,High,3495.0,10,300,1048500.0,125820.0,922680.0,873750.0,48930.0,1-Jan-14,1,January,2014
+Enterprise,Mexico,Paseo,High,2156.0,10,125,269500.0,32340.0,237160.0,258720.0,-21560.0,1-Oct-14,10,October,2014
+Small Business,Germany,Paseo,High,1359.0,10,300,407700.0,48924.0,358776.0,339750.0,19026.0,1-Nov-14,11,November,2014
+Small Business,Mexico,Paseo,High,2150.0,10,300,645000.0,77400.0,567600.0,537500.0,30100.0,1-Nov-14,11,November,2014
+Midmarket,Mexico,Paseo,High,380.0,10,15,5700.0,684.0,5016.0,3800.0,1216.0,1-Dec-13,12,December,2013
+Small Business,Germany,Paseo,High,807.0,10,300,242100.0,31473.0,210627.0,201750.0,8877.0,1-Jan-14,1,January,2014
+Enterprise,Canada,Paseo,High,1583.0,10,125,197875.0,25723.75,172151.25,189960.0,-17808.75,1-Jun-14,6,June,2014
+Channel Partners,Mexico,Paseo,High,571.0,10,12,6852.0,890.76,5961.24,1713.0,4248.24,1-Jul-14,7,July,2014
+Midmarket,Canada,Paseo,High,1565.0,10,15,23475.0,3051.75,20423.25,15650.0,4773.25,1-Oct-14,10,October,2014
+Channel Partners,Germany,Paseo,High,1013.0,10,12,12156.0,1580.28,10575.72,3039.0,7536.72,1-Dec-14,12,December,2014
+Midmarket,Germany,Paseo,High,278.0,10,15,4170.0,583.8,3586.2,2780.0,806.2,1-Feb-14,2,February,2014
+Midmarket,United States of America,Paseo,High,1767.0,10,15,26505.0,3710.7,22794.3,17670.0,5124.3,1-Sep-14,9,September,2014
+Channel Partners,France,Paseo,High,1393.0,10,12,16716.0,2340.24,14375.76,4179.0,10196.76,1-Oct-14,10,October,2014
+Midmarket,Canada,Paseo,High,2470.0,10,15,37050.0,5187.0,31863.0,24700.0,7163.0,1-Sep-13,9,September,2013
+Midmarket,Canada,Paseo,High,1743.0,10,15,26145.0,3660.3,22484.7,17430.0,5054.7,1-Oct-13,10,October,2013
+Channel Partners,United States of America,Paseo,High,2914.0,10,12,34968.0,4895.52,30072.48,8742.0,21330.48,1-Oct-14,10,October,2014
+Channel Partners,Canada,Paseo,High,2222.0,10,12,26664.0,3732.96,22931.04,6666.0,16265.04,1-Nov-13,11,November,2013
+Midmarket,Canada,Paseo,High,1614.0,10,15,24210.0,3631.5,20578.5,16140.0,4438.5,1-Apr-14,4,April,2014
+Midmarket,Canada,Paseo,High,2559.0,10,15,38385.0,5757.75,32627.25,25590.0,7037.25,1-Aug-14,8,August,2014
+Enterprise,Germany,Paseo,High,1085.0,10,125,135625.0,20343.75,115281.25,130200.0,-14918.75,1-Oct-14,10,October,2014
+Midmarket,Germany,Paseo,High,1175.0,10,15,17625.0,2643.75,14981.25,11750.0,3231.25,1-Oct-14,10,October,2014
+Channel Partners,United States of America,Paseo,High,914.0,10,12,10968.0,1645.2,9322.8,2742.0,6580.8,1-Dec-14,12,December,2014
+</script>
+<script>
+/* Minimal stand-in for the dashboard runtime: one embedded dataset and derived calcs. */
+window.dash = (function () {
+  const rows = d3.csvParse(document.getElementById('sd-data').textContent);
+  const cache = { sample_data: rows }, calcs = {}, subs = [];
+  const api = {
+    colors: ['var(--series-1)'],
+    calc(id, o) { calcs[id] = o; },
+    data(id) {
+      if (!(id in cache) && calcs[id]) cache[id] = calcs[id].fn(...calcs[id].inputs.map(i => api.data(i).data));
+      if (!(id in cache)) return { status: 'missing', data: [], columns: [] };
+      const d = cache[id];
+      return { status: 'ok', data: d, refreshing: false, meta: [], columns: Array.isArray(d) && d.length ? Object.keys(d[0]) : [] };
+    },
+    onData(fn) { subs.push(fn); queueMicrotask(fn); },
+    refresh() {}, params() { return {}; }, setParams() {}, resetParams() {}, setLink() {}
+  };
+  let w = window.innerWidth, t;
+  window.addEventListener('resize', () => {
+    if (window.innerWidth === w) return;
+    w = window.innerWidth; clearTimeout(t); t = setTimeout(() => subs.forEach(f => f()), 120);
+  });
+  return api;
+})();
+</script>
+<header class="tb">
+  <div class="tb-in">
+    <a class="tb-brand" href="#overview"><span class="tb-mark" aria-hidden="true">HJ</span>HarpalSinh Jhala</a>
+    <nav class="tb-nav" aria-label="Sections">
+      <a href="#headline">Overview</a>
+      <a href="#insights">Insights</a>
+      <a href="#trends">Trends</a>
+      <a href="#deep-dive">Deep dive</a>
+      <a href="#data">Data</a>
+    </nav>
+    <button class="tb-theme" type="button" aria-label="Switch theme"></button>
+  </div>
+</header>
+<main id="dash-root">
+<style>
+.sd { font-family: var(--font-anthropic-sans); max-width: 1240px; margin-inline: auto; display: flex; flex-direction: column; gap: var(--cds-gap-xl); container-type: inline-size; }
+
+/* Hero */
+.sd-hero { position: relative; overflow: hidden; padding: clamp(20px, 4cqi, 44px); border: 1px solid var(--color-border-line); border-radius: calc(var(--cds-radius) * 1.5);
+  background:
+    radial-gradient(80% 120% at 100% 0%, color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 20%, transparent), transparent 62%),
+    radial-gradient(55% 90% at 0% 100%, color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 9%, transparent), transparent 70%),
+    var(--color-panel); scroll-margin-top: 72px; }
+.sd-hero::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(color-mix(in srgb, var(--color-fg) 16%, transparent) 1px, transparent 1.2px); background-size: 18px 18px;
+  -webkit-mask-image: radial-gradient(55% 75% at 100% 0%, #000, transparent 72%); mask-image: radial-gradient(55% 75% at 100% 0%, #000, transparent 72%); }
+.sd-hero > * { position: relative; }
+.sd-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.sd-badge { display: inline-flex; align-items: center; gap: 6px; font-size: var(--cds-font-size-caption); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--color-border-line); background: color-mix(in srgb, var(--color-panel) 75%, transparent); color: var(--color-fg-muted); white-space: nowrap; }
+.sd-badge i { width: 6px; height: 6px; border-radius: 50%; background: var(--sd-accent, currentColor); box-shadow: 0 0 0 3px color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 25%, transparent); }
+.sd-badge svg { width: 12px; height: 12px; flex: none; }
+.sd-badge-ai { color: var(--color-fg); border-color: color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 50%, var(--color-border-line)); background: color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 10%, var(--color-panel)); }
+.sd-badge-ai svg { color: var(--sd-accent, currentColor); }
+.sd-hero h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: clamp(32px, 5.4cqi, 56px); line-height: 1.04; letter-spacing: -.02em; margin: var(--cds-gap-lg) 0 0; max-width: 18ch; }
+.sd-hero h1 em { font-style: italic; white-space: nowrap; color: var(--sd-accent, inherit); }
+.sd-take { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); margin: var(--cds-gap-md) 0 0; max-width: 44rem; line-height: 1.6; }
+.sd-take b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.sd .sd-take b { font-weight: var(--cds-font-weight-medium); }
+.sd-byline { display: flex; align-items: center; gap: var(--cds-gap-sm); margin-top: var(--cds-gap-lg); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.35; }
+.sd-avatar { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: var(--cds-font-weight-medium); letter-spacing: .03em; color: var(--color-panel); flex: none;
+  background: linear-gradient(135deg, var(--sd-accent, var(--color-fg)), color-mix(in srgb, var(--sd-accent, var(--color-fg)) 45%, var(--color-fg))); }
+.sd-byline strong { display: block; color: var(--color-fg); font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.sd .sd-byline strong { font-weight: var(--cds-font-weight-medium); }
+
+/* Build pipeline */
+.sd-flow { list-style: none; margin: var(--cds-gap-xl) 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr)); gap: var(--cds-gap-lg) var(--cds-gap-md); }
+.sd-flow li { position: relative; padding-top: var(--cds-pad-md); border-top: 1px solid var(--color-border-line); display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 1px; align-content: start; }
+.sd-flow li::before { content: ""; position: absolute; top: -4px; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--color-panel); border: 1.5px solid var(--color-fg-muted); box-sizing: border-box; }
+.sd-flow li.sd-flow-ai { border-top-color: var(--sd-accent, var(--color-fg-muted)); }
+.sd-flow li.sd-flow-ai::before { background: var(--sd-accent, var(--color-fg)); border-color: var(--sd-accent, var(--color-fg)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 22%, transparent); }
+.sd-flow-ico { grid-row: span 2; width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--color-fg) 6%, transparent); color: var(--color-fg); }
+.sd-flow-ai .sd-flow-ico { background: color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 18%, transparent); color: var(--sd-accent, var(--color-fg)); }
+.sd-flow-ico svg { width: 16px; height: 16px; }
+.sd-flow b { font-size: var(--cds-font-size-body); color: var(--color-fg); }
+.sd .sd-flow b { font-weight: var(--cds-font-weight-medium); }
+.sd-flow small { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; }
+
+/* Footer */
+.sd-foot { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); border-top: 1px solid var(--color-border-line); padding-top: var(--cds-pad-lg); display: flex; justify-content: space-between; align-items: center; gap: var(--cds-gap-lg); flex-wrap: wrap; line-height: 1.5; }
+.sd-foot-by { display: flex; align-items: center; gap: var(--cds-gap-sm); }
+.sd-foot-by .sd-avatar { width: 28px; height: 28px; font-size: 10px; }
+.sd-foot strong { color: var(--color-fg); }
+.sd .sd-foot strong { font-weight: var(--cds-font-weight-medium); }
+.sd-foot-src { max-width: 40rem; }
+
+/* Sections */
+.sd-block { display: flex; flex-direction: column; gap: var(--cds-gap-md); scroll-margin-top: 72px; }
+.sd-sec { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-xs) var(--cds-gap-md); flex-wrap: wrap; }
+.sd-sec-h { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); display: flex; align-items: baseline; gap: 10px; }
+.sd-sec-n { font-size: var(--cds-font-size-caption); color: var(--sd-accent, var(--color-fg-muted)); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+.sd-sec-t { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+
+/* Insights */
+.sd-insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--cds-gap-md); }
+@container (min-width: 900px) { .sd-insights { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.sd-ins { display: flex; flex-direction: column; gap: 4px; }
+.sd-ins-ico { width: 32px; height: 32px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: var(--cds-gap-sm); }
+.sd-ins-ico svg { width: 17px; height: 17px; }
+.sd-ins-ico.sd-acc { color: var(--sd-accent, var(--color-fg)); background: color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 15%, transparent); }
+.sd-ins-ico.sd-ok { color: var(--color-ok); background: color-mix(in srgb, var(--color-ok) 13%, transparent); }
+.sd-ins-ico.sd-warn { color: var(--color-bad); background: color-mix(in srgb, var(--color-bad) 13%, transparent); }
+.sd-ins-lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sd-ins-val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: calc(var(--cds-font-size-title) * .9); line-height: 1.1; letter-spacing: -.01em; font-variant-numeric: tabular-nums; min-height: 1.1em; }
+.sd-ins-val.sd-neg { color: var(--color-bad); }
+.sd-ins-det { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+.sd-ins-det span { color: var(--color-fg); }
+
+/* Card motion */
+.sd-card { transition: border-color var(--cds-dur-slow), box-shadow var(--cds-dur-slow), transform var(--cds-dur-slow); }
+.sd-card:hover { border-color: color-mix(in srgb, var(--color-fg) 16%, var(--color-border-line)); }
+.sd-kpi::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: linear-gradient(90deg, var(--sd-accent, var(--color-fg-muted)), transparent 80%); opacity: 0; transition: opacity var(--cds-dur-slow); }
+.sd-kpi:hover::before { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .sd-pre { opacity: 0; transform: translateY(14px); }
+  .sd-pre.sd-in { opacity: 1; transform: none; transition: opacity calc(var(--cds-dur-slow) * 3) var(--cds-ease-out), transform calc(var(--cds-dur-slow) * 3) var(--cds-ease-out), border-color var(--cds-dur-slow), box-shadow var(--cds-dur-slow); }
+  .sd-kpi:hover, .sd-ins:hover { transform: translateY(-2px); box-shadow: 0 14px 32px -20px color-mix(in srgb, var(--sd-accent, var(--color-fg-muted)) 70%, transparent); }
+}
+
+/* KPI cards */
+.sd-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11.5rem), 1fr)); gap: var(--cds-gap-md); }
+@container (min-width: 700px) { .sd-kpis { grid-template-columns: repeat(5, minmax(0, 1fr)); } .sd-kpi-val { font-size: clamp(22px, 2.7cqi, var(--cds-font-size-title)); } }
+.sd-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); position: relative; min-width: 0; }
+.sd-kpi { display: flex; flex-direction: column; gap: var(--cds-gap-xs); padding-bottom: var(--cds-pad-md); overflow: hidden; }
+.sd-kpi-top { display: flex; justify-content: space-between; align-items: center; gap: var(--cds-gap-xs) var(--cds-gap-sm); flex-wrap: wrap; }
+.sd-kpi-lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sd-kpi-val { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -.01em; margin-top: var(--cds-gap-xs); min-height: 1.1em; }
+.sd-kpi-prior { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; min-height: 1.4em; }
+.sd-pill { display: inline-flex; align-items: center; gap: 3px; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; padding: 1px 7px 1px 5px; border-radius: 999px; min-height: 1.4em; white-space: nowrap; }
+.sd-pill svg { width: 11px; height: 11px; flex: none; }
+.sd-pill.sd-good { color: var(--color-ok); background: color-mix(in srgb, var(--color-ok) 12%, transparent); }
+.sd-pill.sd-bad { color: var(--color-bad); background: color-mix(in srgb, var(--color-bad) 12%, transparent); }
+.sd-pill.sd-flat { color: var(--color-fg-muted); background: color-mix(in srgb, var(--color-fg-muted) 12%, transparent); }
+.sd-spark { height: 40px; margin: var(--cds-gap-sm) calc(-1 * var(--cds-pad-lg)) calc(-1 * var(--cds-pad-md)); }
+.sd-spark svg { display: block; }
+
+/* Main grid */
+.sd-main { display: grid; grid-template-columns: 1fr; gap: var(--cds-gap-md); }
+@container (min-width: 900px) { .sd-main { grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); } }
+.sd-card h3 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.sd-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 2px 0 0; }
+.sd-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--cds-gap-md); flex-wrap: wrap; margin-bottom: var(--cds-gap-lg); }
+
+/* Segmented control */
+.sd-ctl { display: flex; align-items: center; gap: var(--cds-gap-sm); flex-wrap: wrap; }
+.sd-ctl-lbl { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sd-seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; padding: 3px; gap: 2px; border-radius: 999px; background: color-mix(in srgb, var(--color-fg) 6%, transparent); border: 1px solid var(--color-border-line); }
+.sd-seg button { all: unset; cursor: pointer; font-size: var(--cds-font-size-caption); font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: 5px 11px; border-radius: 999px; white-space: nowrap; transition: background var(--cds-dur-slow), color var(--cds-dur-slow), box-shadow var(--cds-dur-slow); }
+.sd-seg button:hover { color: var(--color-fg); background: color-mix(in srgb, var(--color-fg) 8%, transparent); }
+.sd-seg button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-panel); box-shadow: 0 1px 3px rgba(0, 0, 0, .18); }
+.sd-seg button:focus-visible { outline: 2px solid var(--color-fg-muted); outline-offset: 2px; }
+
+/* Heatmap + year-over-year */
+.sd-main2 { display: grid; grid-template-columns: 1fr; gap: var(--cds-gap-md); }
+@container (min-width: 900px) { .sd-main2 { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); } }
+.sd-heat, .sd-yoy { min-height: 260px; position: relative; }
+.sd-heat svg, .sd-yoy svg { display: block; overflow: visible; }
+.sd-heat text, .sd-yoy text { font-size: var(--cds-font-size-caption); fill: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.sd-heat .sd-cell-t { font-weight: var(--cds-font-weight-medium); pointer-events: none; }
+.sd-heat .sd-head-t { fill: var(--color-fg); }
+.sd-yoy .sd-chg { font-weight: var(--cds-font-weight-medium); }
+.sd-scale { display: flex; align-items: center; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-md); font-variant-numeric: tabular-nums; }
+.sd-scale i { height: 6px; width: 7rem; border-radius: 999px; }
+
+/* Charts */
+.sd-chart { min-height: 300px; position: relative; }
+.sd-chart svg { display: block; overflow: visible; }
+.sd-chart text, .sd-spark text { font-size: var(--cds-font-size-caption); fill: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.sd-chart .sd-end { fill: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.sd-gl { stroke: var(--cds-chart-grid); }
+.sd-ref { stroke: var(--cds-chart-reference); stroke-dasharray: 3 3; }
+.sd-rule { stroke: var(--cds-chart-axis); }
+@media (prefers-reduced-motion: no-preference) {
+  .sd-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: sd-draw calc(var(--cds-dur-slow) * 4) var(--cds-ease-out) forwards; }
+  .sd-fade { opacity: 0; animation: sd-fade calc(var(--cds-dur-slow) * 3) var(--cds-ease-out) forwards; }
+  .sd-grow { transform-origin: left; animation: sd-grow calc(var(--cds-dur-slow) * 3) var(--cds-ease-out) both; }
+}
+@keyframes sd-draw { to { stroke-dashoffset: 0; } }
+@keyframes sd-fade { to { opacity: 1; } }
+@keyframes sd-grow { from { transform: scaleX(0); } }
+@media (prefers-reduced-motion: no-preference) { .sd-rise { animation: sd-rise calc(var(--cds-dur-slow) * 3) var(--cds-ease-out) both; } }
+@keyframes sd-rise { from { transform: scaleY(0); } }
+
+#trend { display: flex; flex-direction: column; }
+#trend .sd-chart { flex: 1 1 auto; }
+
+/* Breakdown list */
+.sd-list { display: flex; flex-direction: column; gap: var(--cds-gap-md); min-height: 300px; }
+.sd-list[hidden] { display: none; }
+.sd-item-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-body); }
+.sd-item-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sd-item-val { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sd-item-val small { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-left: var(--cds-gap-xs); }
+.sd-track { position: relative; height: 6px; border-radius: 999px; background: var(--cds-chart-grid); margin-top: 6px; overflow: hidden; }
+.sd-track span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
+.sd-legend { display: flex; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin-top: var(--cds-gap-lg); }
+.sd-sw { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 5px; vertical-align: 0; }
+
+/* Tooltip */
+.sd-tip { position: absolute; display: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); pointer-events: none; z-index: 2; white-space: nowrap; }
+.sd-tip-h { color: var(--cds-text-secondary); margin-bottom: 2px; }
+.sd-tip-r { font-variant-numeric: tabular-nums; }
+.sd-tip-sub { color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+
+/* Table */
+.sd-tools { display: flex; gap: var(--cds-gap-sm); align-items: center; flex-wrap: wrap; }
+.sd-search { font: inherit; font-size: var(--cds-font-size-caption); padding: 5px 12px; border: 1px solid var(--color-border-line); border-radius: 999px; background: var(--color-bg); color: var(--color-fg); width: 14rem; max-width: 100%; }
+.sd-search:focus { outline: none; border-color: var(--color-fg-muted); }
+.sd-count { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.sd-tablebox { max-height: 26rem; overflow: auto; min-height: 10rem; margin: 0 calc(-1 * var(--cds-pad-lg)) calc(-1 * var(--cds-pad-lg)); border-top: 1px solid var(--color-border-line); }
+.sd-table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.sd-table th { position: sticky; top: 0; background: var(--color-panel); text-align: left; padding: 0; box-shadow: inset 0 -1px 0 var(--color-border-line); font-weight: 400; }
+.sd-table th button { all: unset; cursor: pointer; display: block; padding: var(--cds-pad-sm) var(--cds-pad-md); color: var(--color-fg-muted); white-space: nowrap; }
+.sd-table th button:hover, .sd-table th[aria-sort="ascending"] button, .sd-table th[aria-sort="descending"] button { color: var(--color-fg); }
+.sd-table th[aria-sort="ascending"] button::after { content: " ↑"; }
+.sd-table th[aria-sort="descending"] button::after { content: " ↓"; }
+.sd-table th.sd-num button { text-align: right; }
+.sd-table td { padding: 6px var(--cds-pad-md); white-space: nowrap; border-bottom: 1px solid color-mix(in srgb, var(--color-border-line) 50%, transparent); }
+.sd-table td.sd-num { text-align: right; }
+.sd-table td.sd-neg { color: var(--color-bad); }
+.sd-table tbody tr:hover td { background: color-mix(in srgb, var(--color-fg) 4%, transparent); }
+
+/* States */
+.sd-fail { display: flex; align-items: center; justify-content: center; gap: .4rem; min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.sd-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+</style>
+
+<div class="sd">
+  <header class="sd-hero" id="overview">
+    <div class="sd-badges">
+      <span class="sd-badge"><i></i>Portfolio project</span>
+      <span class="sd-badge"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="8" cy="4" rx="5" ry="2"/><path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/></svg>Microsoft Fabric Lakehouse</span>
+      <span class="sd-badge sd-badge-ai"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8l1.5 4.1 4.1 1.5-4.1 1.5L8 13l-1.5-4.1L2.4 7.4l4.1-1.5z"/><path d="M13 11.5l.6 1.4 1.4.6-1.4.6L13 15.5l-.6-1.4-1.4-.6 1.4-.6z"/></svg>Built with AI</span>
+    </div>
+    <h1>AI-powered <em>sales analytics</em></h1>
+    <p class="sd-take">
+      Sales for <span class="sd-w-range"><span class="sd-w-from" data-source="kpi" data-row="0" data-field="CurFrom">—</span> – <span class="sd-w-to" data-source="kpi" data-row="0" data-field="CurTo">—</span></span> reached
+      <b data-source="kpi" data-where="Metric=Sales" data-field="Current" class="sd-t-cur dash-skeleton">—</b>,
+      <span data-source="kpi" data-where="Metric=Sales" data-field="Change" class="sd-t-chg dash-skeleton">—</span>
+      on the same months a year earlier.
+      <b data-source="by_segment" data-field="Segment" data-row="0" class="sd-t-topseg dash-skeleton">—</b> earns the most profit.
+    </p>
+    <div class="sd-byline">
+      <span class="sd-avatar" aria-hidden="true">HJ</span>
+      <span>Designed and built by<strong>HarpalSinh Jhala</strong></span>
+    </div>
+    <ol class="sd-flow" aria-label="How this dashboard was built">
+      <li>
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="8" cy="4" rx="5" ry="2"/><path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/></svg></span>
+        <b>Fabric Lakehouse</b><small>Source data in OneLake</small>
+      </li>
+      <li>
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M5 7l2 1.5L5 10M8.5 10H11"/></svg></span>
+        <b>SQL analytics endpoint</b><small>T-SQL with Entra ID sign-in</small>
+      </li>
+      <li>
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4L2 8l4 4M10 4l4 4-4 4"/></svg></span>
+        <b>Python pipeline</b><small>Automated export and shaping</small>
+      </li>
+      <li class="sd-flow-ai">
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8l1.5 4.1 4.1 1.5-4.1 1.5L8 13l-1.5-4.1L2.4 7.4l4.1-1.5z"/><path d="M13 11.5l.6 1.4 1.4.6-1.4.6L13 15.5l-.6-1.4-1.4-.6 1.4-.6z"/></svg></span>
+        <b>AI-assisted engineering</b><small>Analysis, design and code with Claude Code agents</small>
+      </li>
+      <li>
+        <span class="sd-flow-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 13.5h12M4 10.5v3M8 6.5v7M12 3v10.5"/></svg></span>
+        <b>Interactive dashboard</b><small>D3.js, responsive, light and dark</small>
+      </li>
+    </ol>
+  </header>
+
+  <section class="sd-block" id="headline">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">01</span>Headline numbers</h2>
+      <span class="sd-sec-t"><span class="sd-w-range"><span class="sd-w-from" data-source="kpi" data-row="0" data-field="CurFrom">—</span> – <span class="sd-w-to" data-source="kpi" data-row="0" data-field="CurTo">—</span></span>, compared with the same months of the year before</span>
+    </div>
+    <div class="sd-kpis">
+      <div class="sd-card sd-kpi" data-m="Sales" data-up="good">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Sales</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Sales" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Sales" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Sales" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+      <div class="sd-card sd-kpi" data-m="Profit" data-up="good">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Profit</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Profit" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Profit" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Profit" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+      <div class="sd-card sd-kpi" data-m="Margin" data-up="good">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Profit margin</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Margin" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Margin" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Margin" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+      <div class="sd-card sd-kpi" data-m="Units_Sold" data-up="good">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Units sold</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Units_Sold" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Units_Sold" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Units_Sold" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+      <div class="sd-card sd-kpi" data-m="Discounts" data-up="bad">
+        <div class="sd-kpi-top"><span class="sd-kpi-lbl">Discounts given</span><span class="sd-pill dash-skeleton" data-source="kpi" data-where="Metric=Discounts" data-field="Change">—</span></div>
+        <div class="sd-kpi-val dash-skeleton" data-source="kpi" data-where="Metric=Discounts" data-field="Current">—</div>
+        <div class="sd-kpi-prior" data-source="kpi" data-where="Metric=Discounts" data-field="Prior">—</div>
+        <div class="sd-spark" data-source="by_month"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sd-block" id="insights">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">02</span>Key insights</h2>
+      <span class="sd-sec-t">Picked out automatically from the data</span>
+    </div>
+    <div class="sd-insights">
+      <div class="sd-card sd-ins" data-id="best_month">
+        <span class="sd-ins-ico sd-acc"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 13.5l4.5-4.5 3 3 5.5-6.5"/><path d="M11.5 5.5h4v4"/></svg></span>
+        <span class="sd-ins-lbl">Best month for sales</span>
+        <div class="sd-ins-val dash-skeleton" data-source="insights" data-where="Id=best_month" data-field="Value">—</div>
+        <div class="sd-ins-det"><span data-source="insights" data-where="Id=best_month" data-field="Subject" data-fill="Subject">—</span>, the strongest month in the data</div>
+      </div>
+      <div class="sd-card sd-ins" data-id="best_pair">
+        <span class="sd-ins-ico sd-ok"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.2l1.7 4.6 4.6 1.7-4.6 1.7L9 14.8l-1.7-4.6-4.6-1.7 4.6-1.7z"/></svg></span>
+        <span class="sd-ins-lbl">Highest-margin pairing</span>
+        <div class="sd-ins-val dash-skeleton" data-source="insights" data-where="Id=best_pair" data-field="Value">—</div>
+        <div class="sd-ins-det">Margin for <span data-source="insights" data-where="Id=best_pair" data-field="Subject" data-fill="Subject">—</span>, the best country and product combination</div>
+      </div>
+      <div class="sd-card sd-ins" data-id="discount_gap">
+        <span class="sd-ins-ico sd-warn"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9.6V3.5a1 1 0 0 1 1-1h6.1l6 6-7.1 7.1z"/><circle cx="6.2" cy="6.2" r="1.1"/></svg></span>
+        <span class="sd-ins-lbl">Cost of heavy discounting</span>
+        <div class="sd-ins-val dash-skeleton" data-source="insights" data-where="Id=discount_gap" data-field="Value">—</div>
+        <div class="sd-ins-det">Margin is <span data-source="insights" data-where="Id=discount_gap" data-field="High" data-fill="High">—</span> with high discounts against <span data-source="insights" data-where="Id=discount_gap" data-field="None" data-fill="None">—</span> with none</div>
+      </div>
+      <div class="sd-card sd-ins" data-id="weak_segment">
+        <span class="sd-ins-ico sd-warn"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2.8l6.8 12H2.2z"/><path d="M9 7.6v3.2M9 13v.01"/></svg></span>
+        <span class="sd-ins-lbl">Weakest segment</span>
+        <div class="sd-ins-val dash-skeleton" data-source="insights" data-where="Id=weak_segment" data-field="Value">—</div>
+        <div class="sd-ins-det">Margin in <span data-source="insights" data-where="Id=weak_segment" data-field="Subject" data-fill="Subject">—</span>, the lowest of any segment</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sd-block" id="trends">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">03</span>Trends and mix</h2>
+      <span class="sd-sec-t">Use the toggles to switch what each chart shows</span>
+    </div>
+    <div class="sd-main">
+    <div class="sd-card" id="trend">
+      <div class="sd-card-head">
+        <div>
+          <h3>Monthly trend</h3>
+          <p class="sd-note">Every month in the data. The dashed line is the monthly average.</p>
+        </div>
+        <div class="sd-ctl"><span class="sd-ctl-lbl">Show</span>
+        <div class="sd-seg" role="group" aria-label="Trend metric">
+          <button type="button" data-metric="Sales" aria-pressed="true">Sales</button>
+          <button type="button" data-metric="Profit" aria-pressed="false">Profit</button>
+          <button type="button" data-metric="Margin" aria-pressed="false">Margin</button>
+          <button type="button" data-metric="Units_Sold" aria-pressed="false">Units</button>
+        </div></div>
+      </div>
+      <div class="sd-chart dash-skeleton" data-source="by_month"></div>
+      <div class="sd-tip"></div>
+    </div>
+
+    <div class="sd-card" id="breakdown">
+      <div class="sd-card-head">
+        <div>
+          <h3>Breakdown</h3>
+          <p class="sd-note">All months, most profitable first.</p>
+        </div>
+        <div class="sd-ctl"><span class="sd-ctl-lbl">View by</span>
+        <div class="sd-seg" role="group" aria-label="Breakdown dimension">
+          <button type="button" data-dim="seg" aria-pressed="true">Segment</button>
+          <button type="button" data-dim="cty" aria-pressed="false">Country</button>
+          <button type="button" data-dim="prd" aria-pressed="false">Product</button>
+          <button type="button" data-dim="dsc" aria-pressed="false">Discount</button>
+        </div></div>
+      </div>
+      <div class="sd-list dash-skeleton" data-dim="seg" data-source="by_segment" data-key="Segment"></div>
+      <div class="sd-list" data-dim="cty" data-source="by_country" data-key="Country" hidden></div>
+      <div class="sd-list" data-dim="prd" data-source="by_product" data-key="Product" hidden></div>
+      <div class="sd-list" data-dim="dsc" data-source="by_discount" data-key="Discount_Band" hidden></div>
+      <div class="sd-legend"><span><i class="sd-sw sd-sw-sales"></i>Sales</span><span><i class="sd-sw sd-sw-profit"></i>Profit</span></div>
+    </div>
+    </div>
+  </section>
+
+  <section class="sd-block" id="deep-dive">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">04</span>Deep dive</h2>
+      <span class="sd-sec-t">Where profit comes from, and how the latest months compare</span>
+    </div>
+    <div class="sd-main2">
+    <div class="sd-card" id="heatmap">
+      <div class="sd-card-head">
+        <div>
+          <h3>Country × product</h3>
+          <p class="sd-note">Every pairing across all months. Stronger color means higher.</p>
+        </div>
+        <div class="sd-ctl"><span class="sd-ctl-lbl">Color by</span>
+        <div class="sd-seg" role="group" aria-label="Heatmap metric">
+          <button type="button" data-hm="Margin" aria-pressed="true">Margin</button>
+          <button type="button" data-hm="Profit" aria-pressed="false">Profit</button>
+          <button type="button" data-hm="Sales" aria-pressed="false">Sales</button>
+        </div></div>
+      </div>
+      <div class="sd-heat dash-skeleton" data-source="country_product"></div>
+      <div class="sd-scale"><span class="sd-scale-lo"></span><i class="sd-scale-bar"></i><span class="sd-scale-hi"></span></div>
+      <div class="sd-tip"></div>
+    </div>
+
+    <div class="sd-card" id="yoy">
+      <div class="sd-card-head">
+        <div>
+          <h3>Same months, year over year</h3>
+          <p class="sd-note">Each month the two years share, side by side.</p>
+        </div>
+        <div class="sd-ctl"><span class="sd-ctl-lbl">Show</span>
+        <div class="sd-seg" role="group" aria-label="Year-over-year metric">
+          <button type="button" data-yy="Sales" aria-pressed="true">Sales</button>
+          <button type="button" data-yy="Profit" aria-pressed="false">Profit</button>
+          <button type="button" data-yy="Units" aria-pressed="false">Units</button>
+        </div></div>
+      </div>
+      <div class="sd-yoy dash-skeleton" data-source="yoy_months"></div>
+      <div class="sd-legend sd-yoy-legend" data-source="yoy_months"></div>
+      <div class="sd-tip"></div>
+    </div>
+    </div>
+  </section>
+
+  <section class="sd-block" id="data">
+    <div class="sd-sec">
+      <h2 class="sd-sec-h"><span class="sd-sec-n">05</span>The data</h2>
+      <span class="sd-sec-t">dbo.sample_data, exactly as exported</span>
+    </div>
+    <div class="sd-card" id="rows">
+    <div class="sd-card-head">
+      <div>
+        <h3>All rows</h3>
+        <p class="sd-note">The full table as exported. Click a header to sort.</p>
+      </div>
+      <div class="sd-tools">
+        <input class="sd-search" type="search" placeholder="Search" aria-label="Search rows">
+        <span class="sd-count"></span>
+      </div>
+    </div>
+    <div class="sd-tablebox dash-skeleton">
+      <table class="sd-table" data-source="table_rows" data-row-key="Row"><thead><tr></tr></thead><tbody></tbody></table>
+    </div>
+    </div>
+  </section>
+
+  <footer class="sd-foot">
+    <div class="sd-foot-by">
+      <span class="sd-avatar" aria-hidden="true">HJ</span>
+      <span><strong>HarpalSinh Jhala</strong><br>Data analytics · Microsoft Fabric · AI-assisted engineering</span>
+    </div>
+    <span class="sd-foot-src">Data: Microsoft's financial sample dataset, stored as <strong>dbo.sample_data</strong> in a Fabric lakehouse and exported through its SQL analytics endpoint. Built with Python, D3.js and Claude Code.</span>
+  </footer>
+</div>
+
+<script>
+dash.calc('kpi', {
+  title: 'Latest months vs a year earlier',
+  description: 'Sums each metric over the months the earlier year has, in the latest year and the year before; Change is the growth rate (for margin, the difference in margin).',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const year = Math.max(...sample_data.map(r => Number(r.Year)));
+    const months = new Set(sample_data.filter(r => Number(r.Year) === year - 1).map(r => Number(r.Month_Number)));
+    const sum = (y, k) => sample_data
+      .filter(r => Number(r.Year) === y && months.has(Number(r.Month_Number)))
+      .reduce((s, r) => s + (Number(r[k]) || 0), 0);
+    const ms = [...months].sort((a, b) => a - b);
+    const CurFrom = `${year}-${String(ms[0]).padStart(2, '0')}`;
+    const CurTo = `${year}-${String(ms[ms.length - 1]).padStart(2, '0')}`;
+    const out = ['Sales', 'Profit', 'Units_Sold', 'Discounts'].map(Metric => {
+      const Current = sum(year, Metric), Prior = sum(year - 1, Metric);
+      return { Metric, Current, Prior, Change: Prior ? Current / Prior - 1 : null, CurFrom, CurTo };
+    });
+    const [s, p] = out;
+    const Current = s.Current ? p.Current / s.Current : 0, Prior = s.Prior ? p.Prior / s.Prior : 0;
+    out.splice(2, 0, { Metric: 'Margin', Current, Prior, Change: Current - Prior, CurFrom, CurTo });
+    return out;
+  }
+});
+
+dash.calc('by_month', {
+  title: 'Metrics by month',
+  description: 'Sales, profit, units and discounts summed per year and month; margin is profit divided by sales.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const Month = `${r.Year}-${String(r.Month_Number).padStart(2, '0')}`;
+      const o = m.get(Month) || { Month, Sales: 0, Profit: 0, Units_Sold: 0, Discounts: 0 };
+      for (const k of ['Sales', 'Profit', 'Units_Sold', 'Discounts']) o[k] += Number(r[k]) || 0;
+      m.set(Month, o);
+    }
+    return [...m.values()]
+      .map(o => Object.assign(o, { Margin: o.Sales ? o.Profit / o.Sales : 0 }))
+      .sort((a, b) => a.Month < b.Month ? -1 : 1);
+  }
+});
+
+dash.calc('by_segment', {
+  title: 'Sales and profit by segment',
+  description: 'Sales and profit summed per segment, most profitable first.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const o = m.get(r.Segment) || { Segment: r.Segment, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(r.Segment, o);
+    }
+    return [...m.values()].sort((a, b) => b.Profit - a.Profit);
+  }
+});
+
+dash.calc('by_country', {
+  title: 'Sales and profit by country',
+  description: 'Sales and profit summed per country, most profitable first.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const o = m.get(r.Country) || { Country: r.Country, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(r.Country, o);
+    }
+    return [...m.values()].sort((a, b) => b.Profit - a.Profit);
+  }
+});
+
+dash.calc('by_product', {
+  title: 'Sales and profit by product',
+  description: 'Sales and profit summed per product, most profitable first.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const o = m.get(r.Product) || { Product: r.Product, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(r.Product, o);
+    }
+    return [...m.values()].sort((a, b) => b.Profit - a.Profit);
+  }
+});
+
+dash.calc('by_discount', {
+  title: 'Sales and profit by discount band',
+  description: 'Sales and profit summed per discount band, most profitable first.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const o = m.get(r.Discount_Band) || { Discount_Band: r.Discount_Band, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(r.Discount_Band, o);
+    }
+    return [...m.values()].sort((a, b) => b.Profit - a.Profit);
+  }
+});
+
+dash.calc('country_product', {
+  title: 'Country by product',
+  description: 'Sales and profit summed for each country and product pair; margin is profit divided by sales.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const m = new Map();
+    for (const r of sample_data) {
+      const k = `${r.Country}|${r.Product}`;
+      const o = m.get(k) || { Country: r.Country, Product: r.Product, Sales: 0, Profit: 0 };
+      o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+      m.set(k, o);
+    }
+    return [...m.values()].map(o => Object.assign(o, { Margin: o.Sales ? o.Profit / o.Sales : 0 }));
+  }
+});
+
+dash.calc('yoy_months', {
+  title: 'Same months, two years',
+  description: 'Sales, profit and units per month for the latest year and the year before, for the months both years have.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const year = Math.max(...sample_data.map(r => Number(r.Year)));
+    const m = new Map();
+    for (const r of sample_data) {
+      const y = Number(r.Year);
+      if (y !== year && y !== year - 1) continue;
+      const n = Number(r.Month_Number), s = y === year ? 'Cur' : 'Prior';
+      const o = m.get(n) || { Month_Number: n, Month: r.Month_Name, Year: year, PriorYear: year - 1,
+        Sales_Cur: 0, Sales_Prior: 0, Profit_Cur: 0, Profit_Prior: 0, Units_Cur: 0, Units_Prior: 0, both: 0 };
+      o[`Sales_${s}`] += Number(r.Sales) || 0;
+      o[`Profit_${s}`] += Number(r.Profit) || 0;
+      o[`Units_${s}`] += Number(r.Units_Sold) || 0;
+      o.both |= s === 'Cur' ? 1 : 2;
+      m.set(n, o);
+    }
+    return [...m.values()].filter(o => o.both === 3)
+      .sort((a, b) => a.Month_Number - b.Month_Number)
+      .map(({ both, ...o }) => o);
+  }
+});
+
+dash.calc('insights', {
+  title: 'Key insights',
+  description: 'The best month by sales, the highest-margin country and product pair, the margin gap between high and no discounts, and the lowest-margin segment.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => {
+    const group = key => {
+      const m = new Map();
+      for (const r of sample_data) {
+        const k = key(r), o = m.get(k) || { k, Sales: 0, Profit: 0 };
+        o.Sales += Number(r.Sales) || 0; o.Profit += Number(r.Profit) || 0;
+        m.set(k, o);
+      }
+      return [...m.values()].map(o => Object.assign(o, { Margin: o.Sales ? o.Profit / o.Sales : 0 }));
+    };
+    const top = (list, f) => list.reduce((a, b) => f(b) > f(a) ? b : a);
+    const month = top(group(r => `${r.Month_Name} ${r.Year}`), o => o.Sales);
+    const pair = top(group(r => `${r.Country} · ${r.Product}`), o => o.Margin);
+    const bands = group(r => r.Discount_Band);
+    const high = bands.find(b => b.k === 'High'), none = bands.find(b => b.k === 'None');
+    const seg = top(group(r => r.Segment), o => -o.Margin);
+    return [
+      { Id: 'best_month', Subject: month.k, Value: month.Sales },
+      { Id: 'best_pair', Subject: pair.k, Value: pair.Margin },
+      { Id: 'discount_gap', Subject: 'High vs none', Value: high && none ? high.Margin - none.Margin : null, High: high ? high.Margin : null, None: none ? none.Margin : null },
+      { Id: 'weak_segment', Subject: seg.k, Value: seg.Margin }
+    ];
+  }
+});
+
+dash.calc('table_rows', {
+  title: 'Rows with a row number',
+  description: 'Every row of the snapshot, numbered from 1 in file order so each can be told apart.',
+  inputs: ['sample_data'],
+  fn: (sample_data) => sample_data.map((r, i) => Object.assign({ Row: i + 1 }, r))
+});
+
+(function () {
+  const root = document.querySelector('.sd');
+  root.style.setProperty('--sd-accent', dash.colors[0]);
+  const compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
+  const money = v => (v < 0 ? '-$' : '$') + compact.format(Math.abs(v));
+  const pct = d3.format('.1%');
+  const fmt = { Sales: money, Profit: money, Discounts: money, Margin: pct, Units_Sold: v => compact.format(v) };
+  const label = { Sales: 'Sales', Profit: 'Profit', Margin: 'Profit margin', Units_Sold: 'Units sold', Discounts: 'Discounts' };
+  const mParse = d3.utcParse('%Y-%m');
+  const mLong = s => { const d = mParse(s); return d ? d3.utcFormat('%B %Y')(d) : s; };
+  const mMon = s => { const d = mParse(s); return d ? d3.utcFormat('%b')(d) : s; };
+  const mYear = s => { const d = mParse(s); return d ? d3.utcFormat('%Y')(d) : s; };
+  const numFmt = d3.format(',.2~f');
+  const money0 = d3.format('$,.0f');
+  const MONEY_COLS = new Set(['Manufacturing_Price', 'Sale_Price', 'Gross_Sales', 'Discounts', 'Sales', 'COGS', 'Profit']);
+  const PLAIN_COLS = new Set(['Year', 'Month_Number']);
+  let gid = 0;
+
+  const ARROW_UP = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10V2.5M2.5 6 6 2.5 9.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const ARROW_DN = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 2v7.5M2.5 6 6 9.5 9.5 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  root.querySelectorAll('.sd-sw-sales').forEach(e => { e.style.background = dash.colors[0]; e.style.opacity = .3; });
+  root.querySelectorAll('.sd-sw-profit').forEach(e => e.style.background = dash.colors[0]);
+
+  const unskel = el => el.classList.remove('dash-skeleton');
+  const isErr = s => s === 'error' || s === 'connect' || s === 'declined' || s === 'missing';
+  const fail = el => { unskel(el); el.textContent = ''; const f = document.createElement('div'); f.className = 'sd-fail'; f.textContent = 'Failed to load'; el.appendChild(f); };
+
+  function measure(svg, texts, cls) {
+    let w = 0;
+    const g = svg.append('g').attr('opacity', 0);
+    for (const t of texts) { const n = g.append('text').attr('class', cls || null).text(t).node(); w = Math.max(w, n.getComputedTextLength()); }
+    g.remove();
+    return w;
+  }
+
+  function gradient(svg, color) {
+    const id = `sd-g${++gid}`;
+    const lg = svg.append('defs').append('linearGradient').attr('id', id).attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', 1);
+    [[0, .26], [.25, .16], [.5, .08], [.75, .03], [1, 0]].forEach(([o, a]) =>
+      lg.append('stop').attr('offset', o).attr('style', `stop-color:${color};stop-opacity:${a}`));
+    return `url(#${id})`;
+  }
+
+  /* ---------- KPI cards ---------- */
+  function drawSpark(el, rows, metric, nRecent) {
+    el.textContent = '';
+    const W = Math.max(el.clientWidth, 120), H = 40, pad = 3;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'none');
+    const x = d3.scaleLinear([0, rows.length - 1], [0, W]);
+    const ext = d3.extent(rows, d => d[metric]);
+    const y = d3.scaleLinear([ext[0] - (ext[1] - ext[0]) * .15, ext[1]], [H - 1, pad]);
+    const pts = rows.map((d, i) => [x(i), y(d[metric])]);
+    svg.append('path').attr('d', d3.area().x(p => p[0]).y0(H).y1(p => p[1])(pts)).attr('fill', gradient(svg, dash.colors[0]));
+    const split = Math.max(0, rows.length - nRecent);
+    svg.append('path').attr('d', d3.line()(pts.slice(0, split + 1))).attr('fill', 'none')
+      .attr('stroke', 'var(--cds-chart-muted)').attr('stroke-width', 1.5).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('vector-effect', 'non-scaling-stroke');
+    svg.append('path').attr('d', d3.line()(pts.slice(split))).attr('fill', 'none')
+      .attr('stroke', dash.colors[0]).attr('stroke-width', 1.75).attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('vector-effect', 'non-scaling-stroke');
+  }
+
+  function fillKpis(kpi, months) {
+    const ok = kpi.status === 'ok' && kpi.data.length;
+    const recent = ok ? (() => { const k = kpi.data[0]; return months.filter(m => m.Month >= k.CurFrom && m.Month <= k.CurTo).length; })() : 0;
+    root.querySelectorAll('.sd-kpi').forEach(card => {
+      const m = card.dataset.m;
+      const val = card.querySelector('.sd-kpi-val'), pill = card.querySelector('.sd-pill'), prior = card.querySelector('.sd-kpi-prior'), spark = card.querySelector('.sd-spark');
+      const row = ok ? kpi.data.find(r => r.Metric === m) : null;
+      if (row) {
+        [val, pill].forEach(unskel);
+        val.textContent = fmt[m](row.Current);
+        prior.textContent = `from ${fmt[m](row.Prior)}`;
+        const c = row.Change;
+        if (c == null) { pill.className = 'sd-pill sd-flat'; pill.textContent = 'new'; }
+        else {
+          const up = c > 0, flat = Math.abs(c) < 0.0005;
+          const good = flat ? null : (up === (card.dataset.up === 'good'));
+          pill.className = 'sd-pill ' + (flat ? 'sd-flat' : good ? 'sd-good' : 'sd-bad');
+          pill.innerHTML = flat ? '' : (up ? ARROW_UP : ARROW_DN);
+          const txt = m === 'Margin' ? `${d3.format('.1f')(Math.abs(c) * 100)} pts` : d3.format('.1%')(Math.abs(c));
+          pill.appendChild(document.createTextNode(txt));
+        }
+      } else if (kpi.status !== 'loading') {
+        [val, pill].forEach(unskel);
+        if (isErr(kpi.status)) { fail(val); } else val.textContent = '—';
+        pill.textContent = ''; pill.className = 'sd-pill'; prior.textContent = '';
+      }
+      if (months.length) drawSpark(spark, months, m, recent || 4); else spark.textContent = '';
+    });
+  }
+
+  /* ---------- Trend chart ---------- */
+  let trendMetric = 'Sales', animateTrend = true;
+  const trendEl = root.querySelector('#trend .sd-chart');
+  const trendCard = root.querySelector('#trend'), trendTip = trendCard.querySelector('.sd-tip');
+
+  function drawTrend(rows) {
+    const el = trendEl, metric = trendMetric, f = fmt[metric];
+    el.textContent = '';
+    const W = Math.max(el.clientWidth, 280), H = Math.max(300, Math.floor(el.clientHeight)), mt = 28, mb = 30;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
+    const data = rows.map(d => ({ d: mParse(d.Month), m: d.Month, v: d[metric] }));
+    const vmax = d3.max(data, d => d.v) || 1;
+    const y = d3.scaleLinear([0, vmax], [H - mb, mt]).nice(4);
+    const ticks = y.ticks(4);
+    const ml = Math.ceil(measure(svg, ticks.map(f))) + 12;
+    const last = data[data.length - 1];
+    const mr = Math.ceil(measure(svg, [f(last.v)], 'sd-end')) + 16;
+    const x = d3.scaleUtc(d3.extent(data, d => d.d), [ml, W - mr]);
+
+    // grid + y labels
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('class', 'sd-gl')
+      .attr('x1', ml).attr('x2', W - mr).attr('y1', d => y(d)).attr('y2', d => y(d));
+    svg.append('g').selectAll('text').data(ticks).join('text')
+      .attr('x', ml - 12).attr('y', d => y(d)).attr('dy', '0.32em').attr('text-anchor', 'end').text(f);
+
+    // x labels: months, with the year under January and the first month
+    const minGap = measure(svg, ['May']) + 14;
+    const every = Math.max(1, Math.ceil(minGap / ((W - ml - mr) / Math.max(1, data.length - 1))));
+    const xt = data.filter((d, i) => i % every === 0);
+    const xg = svg.append('g');
+    xg.selectAll('text.m').data(xt).join('text').attr('class', 'm')
+      .attr('x', d => x(d.d)).attr('y', H - mb + 18).attr('text-anchor', 'middle').text(d => mMon(d.m));
+    const yearStarts = data.filter((d, i) => i === 0 || d.m.endsWith('-01'));
+    yearStarts.forEach(d => {
+      svg.append('text').attr('x', x(d.d)).attr('y', mt - 14).attr('text-anchor', 'middle').attr('class', 'sd-end').text(mYear(d.m));
+      if (d !== data[0]) svg.append('line').attr('class', 'sd-gl').attr('x1', x(d.d)).attr('x2', x(d.d)).attr('y1', mt - 6).attr('y2', H - mb);
+    });
+
+    // average
+    const avg = d3.mean(data, d => d.v);
+    svg.append('line').attr('class', 'sd-ref').attr('x1', ml).attr('x2', W - mr).attr('y1', y(avg)).attr('y2', y(avg));
+    if (ticks.every(tk => Math.abs(y(tk) - y(avg)) > 13)) svg.append('text').attr('x', ml - 12).attr('y', y(avg)).attr('dy', '0.32em').attr('text-anchor', 'end').attr('class', 'sd-end').text('Avg');
+
+    // area + line
+    const area = d3.area().x(d => x(d.d)).y0(y(0)).y1(d => y(d.v));
+    const line = d3.line().x(d => x(d.d)).y(d => y(d.v));
+    svg.append('path').attr('d', area(data)).attr('fill', gradient(svg, dash.colors[0])).attr('class', animateTrend ? 'sd-fade' : null);
+    svg.append('path').attr('d', line(data)).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 2)
+      .attr('stroke-linejoin', 'round').attr('stroke-linecap', 'round').attr('pathLength', 1).attr('class', animateTrend ? 'sd-draw' : null)
+      .on('animationend', function () { this.removeAttribute('class'); this.removeAttribute('pathLength'); });
+
+    // peak marker
+    const peak = data.reduce((a, b) => b.v > a.v ? b : a);
+    if (peak !== last) {
+      svg.append('circle').attr('cx', x(peak.d)).attr('cy', y(peak.v)).attr('r', 3).attr('fill', 'var(--color-panel)').attr('stroke', dash.colors[0]).attr('stroke-width', 1.5);
+      const pl = svg.append('text').attr('x', x(peak.d)).attr('y', y(peak.v) - 10).attr('text-anchor', 'middle').text(`Peak ${f(peak.v)}`);
+      const bb = pl.node().getBBox();
+      if (bb.x + bb.width > W - mr) pl.attr('text-anchor', 'end');
+      if (bb.y < mt - 4) pl.attr('y', y(peak.v) + 18);
+    }
+    // keep the average label clear of the line's first point
+
+    // end dot + label
+    svg.append('circle').attr('cx', x(last.d)).attr('cy', y(last.v)).attr('r', 4).attr('fill', dash.colors[0]).attr('stroke', 'var(--color-panel)').attr('stroke-width', 2);
+    svg.append('text').attr('class', 'sd-end').attr('x', x(last.d) + 9).attr('y', y(last.v)).attr('dy', '0.32em').text(f(last.v));
+
+    // hover
+    const rule = svg.append('line').attr('class', 'sd-rule').attr('y1', mt - 6).attr('y2', H - mb).attr('display', 'none');
+    const hdot = svg.append('circle').attr('r', 4.5).attr('fill', dash.colors[0]).attr('stroke', 'var(--color-panel)').attr('stroke-width', 2).attr('display', 'none');
+    const bis = d3.bisector(d => d.d).center;
+    svg.append('rect').attr('x', ml).attr('y', 0).attr('width', W - ml - mr + 8).attr('height', H).attr('fill', 'transparent')
+      .on('mousemove', ev => {
+        const [px] = d3.pointer(ev);
+        const d = data[bis(data, x.invert(px))];
+        rule.attr('display', null).attr('x1', x(d.d)).attr('x2', x(d.d));
+        hdot.attr('display', null).attr('cx', x(d.d)).attr('cy', y(d.v));
+        const r = rows.find(o => o.Month === d.m);
+        trendTip.textContent = '';
+        const h = document.createElement('div'); h.className = 'sd-tip-h'; h.textContent = mLong(d.m); trendTip.appendChild(h);
+        const v = document.createElement('div'); v.className = 'sd-tip-r'; v.textContent = `${label[metric]} ${f(d.v)}`; trendTip.appendChild(v);
+        const s = document.createElement('div'); s.className = 'sd-tip-sub';
+        s.textContent = metric === 'Margin' ? `Profit ${money(r.Profit)} on ${money(r.Sales)}` : `${d.v >= avg ? '+' : '−'}${d3.format('.0%')(Math.abs(d.v / avg - 1))} vs average`;
+        trendTip.appendChild(s);
+        trendTip.style.display = 'block';
+        const cb = trendCard.getBoundingClientRect(), eb = el.getBoundingClientRect();
+        const sx = eb.width / W;
+        let tx = eb.left - cb.left + x(d.d) * sx + 14, ty = eb.top - cb.top + y(d.v) - trendTip.offsetHeight - 10;
+        if (tx + trendTip.offsetWidth > cb.width - 6) tx = eb.left - cb.left + x(d.d) * sx - trendTip.offsetWidth - 14;
+        if (ty < 4) ty = eb.top - cb.top + y(d.v) + 14;
+        trendTip.style.left = tx + 'px'; trendTip.style.top = ty + 'px';
+      })
+      .on('mouseleave', () => { rule.attr('display', 'none'); hdot.attr('display', 'none'); trendTip.style.display = 'none'; });
+    animateTrend = false;
+  }
+
+  root.querySelectorAll('#trend .sd-seg button').forEach(b => b.addEventListener('click', () => {
+    trendMetric = b.dataset.metric;
+    root.querySelectorAll('#trend .sd-seg button').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+    const m = dash.data('by_month');
+    if (m.status === 'ok' && m.data.length) { animateTrend = true; drawTrend(m.data); }
+  }));
+
+  /* ---------- Breakdown ---------- */
+  let dim = 'seg';
+  function drawList(el, rows, key, animate) {
+    el.textContent = '';
+    const max = d3.max(rows, d => d.Sales) || 1;
+    rows.forEach((d, i) => {
+      const item = document.createElement('div');
+      const top = document.createElement('div'); top.className = 'sd-item-top';
+      const n = document.createElement('span'); n.className = 'sd-item-name'; n.textContent = d[key];
+      const v = document.createElement('span'); v.className = 'sd-item-val'; v.textContent = money(d.Sales);
+      const sm = document.createElement('small'); sm.textContent = `${pct(d.Sales ? d.Profit / d.Sales : 0)} margin`; v.appendChild(sm);
+      top.append(n, v);
+      const tr = document.createElement('div'); tr.className = 'sd-track';
+      const s = document.createElement('span'); s.style.width = `${d.Sales / max * 100}%`; s.style.background = dash.colors[0]; s.style.opacity = .3;
+      const p = document.createElement('span'); p.style.width = `${Math.max(0, d.Profit) / max * 100}%`; p.style.background = dash.colors[0];
+      if (animate) { [s, p].forEach(x => { x.classList.add('sd-grow'); x.style.animationDelay = `${i * 40}ms`; }); }
+      tr.append(s, p);
+      item.append(top, tr);
+      el.appendChild(item);
+    });
+  }
+  const shown = new Set();
+  function fillLists() {
+    root.querySelectorAll('.sd-list').forEach(el => {
+      el.hidden = el.dataset.dim !== dim;
+      if (el.hidden) return;
+      const d = dash.data(el.dataset.source);
+      if (d.status === 'ok' && d.data.length) { unskel(el); const first = !shown.has(el); shown.add(el); drawList(el, d.data, el.dataset.key, first); }
+      else if (isErr(d.status)) fail(el);
+      else if (d.status === 'loading') { el.textContent = ''; el.classList.add('dash-skeleton'); }
+      else { unskel(el); el.textContent = ''; }
+    });
+  }
+  root.querySelectorAll('#breakdown .sd-seg button').forEach(b => b.addEventListener('click', () => {
+    dim = b.dataset.dim;
+    root.querySelectorAll('#breakdown .sd-seg button').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+    fillLists();
+  }));
+
+  /* ---------- Insights ---------- */
+  function fillInsights() {
+    const d = dash.data('insights');
+    root.querySelectorAll('.sd-ins').forEach(card => {
+      const id = card.dataset.id, val = card.querySelector('.sd-ins-val');
+      const row = d.status === 'ok' ? d.data.find(r => r.Id === id) : null;
+      if (row && row.Value != null) {
+        unskel(val);
+        val.textContent = id === 'best_month' ? money(row.Value)
+          : id === 'discount_gap' ? `${row.Value < 0 ? '−' : '+'}${d3.format('.1f')(Math.abs(row.Value) * 100)} pts`
+          : pct(row.Value);
+        val.classList.toggle('sd-neg', row.Value < 0);
+        card.querySelectorAll('[data-fill]').forEach(s => {
+          const k = s.dataset.fill;
+          s.textContent = k === 'Subject' ? row.Subject : row[k] == null ? '—' : pct(row[k]);
+        });
+      } else if (d.status !== 'loading') {
+        unskel(val);
+        if (isErr(d.status)) fail(val); else val.textContent = '—';
+        card.querySelectorAll('[data-fill]').forEach(s => { s.textContent = '—'; });
+      }
+    });
+  }
+
+  /* ---------- Reveal on scroll ---------- */
+  (function reveal() {
+    if (!('IntersectionObserver' in window) || !window.matchMedia('(prefers-reduced-motion: no-preference)').matches) return;
+    const els = [...root.querySelectorAll('.sd-hero, .sd-block > .sd-sec, .sd-card')];
+    els.forEach(el => el.classList.add('sd-pre'));
+    const show = el => { el.classList.add('sd-in'); setTimeout(() => { el.style.transitionDelay = ''; }, 900); };
+    let seen = false;
+    try {
+      const io = new IntersectionObserver(entries => {
+        seen = true;
+        let n = 0;
+        entries.forEach(e => {
+          if (!e.isIntersecting) return;
+          e.target.style.transitionDelay = `${Math.min(n++, 6) * 60}ms`;
+          show(e.target);
+          io.unobserve(e.target);
+        });
+      }, { root: document, threshold: 0.06 });
+      els.forEach(el => io.observe(el));
+      setTimeout(() => { if (!seen) els.forEach(show); }, 1500);
+    } catch (err) {
+      els.forEach(el => el.classList.remove('sd-pre'));
+    }
+  })();
+
+  /* ---------- Shared tooltip ---------- */
+  function showTip(card, tip, ev, head, lines) {
+    tip.textContent = '';
+    const h = document.createElement('div'); h.className = 'sd-tip-h'; h.textContent = head; tip.appendChild(h);
+    for (const [color, text] of lines) {
+      const r = document.createElement('div'); r.className = 'sd-tip-r';
+      if (color) { const s = document.createElement('i'); s.className = 'sd-sw'; s.style.background = color; r.appendChild(s); }
+      r.appendChild(document.createTextNode(text));
+      tip.appendChild(r);
+    }
+    tip.style.display = 'block';
+    const cb = card.getBoundingClientRect();
+    let x = ev.clientX - cb.left + 14, y = ev.clientY - cb.top - tip.offsetHeight - 10;
+    if (x + tip.offsetWidth > cb.width - 6) x = ev.clientX - cb.left - tip.offsetWidth - 14;
+    if (x < 6) x = 6;
+    if (y < 6) y = ev.clientY - cb.top + 16;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  }
+  const wireSeg = (sel, attr, onPick) => root.querySelectorAll(`${sel} .sd-seg button`).forEach(b => b.addEventListener('click', () => {
+    root.querySelectorAll(`${sel} .sd-seg button`).forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+    onPick(b.dataset[attr]);
+  }));
+
+  /* ---------- Heatmap ---------- */
+  let hmMetric = 'Margin';
+  const heatEl = root.querySelector('.sd-heat'), heatCard = root.querySelector('#heatmap'), heatTip = heatCard.querySelector('.sd-tip');
+  function drawHeat(rows) {
+    const el = heatEl, f = fmt[hmMetric];
+    el.textContent = '';
+    const countries = [...new Set(rows.map(r => r.Country))].sort((a, b) =>
+      d3.sum(rows.filter(r => r.Country === b), r => r.Profit) - d3.sum(rows.filter(r => r.Country === a), r => r.Profit));
+    const products = [...new Set(rows.map(r => r.Product))].sort((a, b) =>
+      d3.sum(rows.filter(r => r.Product === b), r => r.Profit) - d3.sum(rows.filter(r => r.Product === a), r => r.Profit));
+    const W = Math.max(el.clientWidth, 280), cellH = 42, top = 26;
+    const H = top + countries.length * cellH;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
+    const short = { 'United States of America': 'USA' };
+    const cName = c => short[c] || c;
+    const ml = Math.ceil(measure(svg, countries.map(cName))) + 12;
+    const x = d3.scaleBand(products, [ml, W]).paddingInner(0.06);
+    const y = d3.scaleBand(countries, [top, H]).paddingInner(0.1);
+    const fullW = measure(svg, products);
+    const pName = p => fullW + 6 > x.bandwidth() ? p.slice(0, 3) : p;
+    svg.append('g').selectAll('text').data(products).join('text').attr('class', 'sd-head-t')
+      .attr('x', d => x(d) + x.bandwidth() / 2).attr('y', top - 10).attr('text-anchor', 'middle').text(pName);
+    svg.append('g').selectAll('text').data(countries).join('text').attr('class', 'sd-head-t')
+      .attr('x', ml - 12).attr('y', d => y(d) + y.bandwidth() / 2).attr('dy', '0.32em').attr('text-anchor', 'end').text(cName);
+    const vals = rows.map(r => r[hmMetric]);
+    const vmax = d3.max(vals), vmin = d3.min(vals);
+    const lo = Math.min(0, vmin) < 0 ? 0 : vmin;
+    const op = v => v < 0 ? 0.25 + 0.6 * (vmin < 0 ? v / vmin : 0) : 0.1 + 0.9 * ((v - lo) / ((vmax - lo) || 1));
+    const showText = x.bandwidth() > measure(svg, ['-00.0%']) + 6;
+    const g = svg.append('g').selectAll('g').data(rows).join('g');
+    g.append('rect').attr('x', d => x(d.Product)).attr('y', d => y(d.Country))
+      .attr('width', x.bandwidth()).attr('height', y.bandwidth()).attr('rx', 6)
+      .attr('fill', d => d[hmMetric] < 0 ? 'var(--cds-chart-status-critical)' : dash.colors[0])
+      .attr('fill-opacity', d => op(d[hmMetric]))
+      .attr('stroke', 'var(--color-panel)').attr('stroke-width', 0)
+      .on('mousemove', function (ev, d) {
+        d3.select(this).attr('stroke', 'var(--color-fg)').attr('stroke-width', 1.5);
+        showTip(heatCard, heatTip, ev, `${d.Country} · ${d.Product}`, [[null, `Sales ${money(d.Sales)}`], [null, `Profit ${money(d.Profit)}`], [null, `Margin ${pct(d.Margin)}`]]);
+      })
+      .on('mouseleave', function () { d3.select(this).attr('stroke-width', 0); heatTip.style.display = 'none'; });
+    if (showText) g.append('text').attr('class', 'sd-cell-t')
+      .attr('x', d => x(d.Product) + x.bandwidth() / 2).attr('y', d => y(d.Country) + y.bandwidth() / 2).attr('dy', '0.32em').attr('text-anchor', 'middle')
+      .attr('style', d => `fill:${op(d[hmMetric]) > 0.55 ? 'var(--color-panel)' : 'var(--color-fg)'}`)
+      .text(d => f(d[hmMetric]));
+    el.style.minHeight = H + 'px';
+    const bar = heatCard.querySelector('.sd-scale-bar');
+    bar.style.background = `linear-gradient(90deg, color-mix(in srgb, ${dash.colors[0]} 10%, transparent), ${dash.colors[0]})`;
+    heatCard.querySelector('.sd-scale-lo').textContent = f(vmin);
+    heatCard.querySelector('.sd-scale-hi').textContent = f(vmax);
+  }
+  function fillHeat() {
+    const d = dash.data('country_product');
+    if (d.status === 'ok' && d.data.length) { unskel(heatEl); drawHeat(d.data); }
+    else if (isErr(d.status)) fail(heatEl);
+    else if (d.status === 'loading') { heatEl.textContent = ''; heatEl.classList.add('dash-skeleton'); }
+    else { unskel(heatEl); heatEl.textContent = ''; }
+  }
+  wireSeg('#heatmap', 'hm', v => { hmMetric = v; fillHeat(); });
+
+  /* ---------- Year over year ---------- */
+  let yyMetric = 'Sales';
+  const yoyEl = root.querySelector('.sd-yoy'), yoyCard = root.querySelector('#yoy'), yoyTip = yoyCard.querySelector('.sd-tip');
+  function drawYoy(rows, animate) {
+    const el = yoyEl, m = yyMetric, f = m === 'Units' ? (v => compact.format(v)) : money;
+    el.textContent = '';
+    const W = Math.max(el.clientWidth, 260), H = 260, mt = 26, mb = 26;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('height', H).attr('viewBox', `0 0 ${W} ${H}`);
+    const vmax = d3.max(rows, r => Math.max(r[`${m}_Cur`], r[`${m}_Prior`])) || 1;
+    const y = d3.scaleLinear([0, vmax], [H - mb, mt]).nice(4);
+    const ticks = y.ticks(4);
+    const ml = Math.ceil(measure(svg, ticks.map(f))) + 12;
+    const x = d3.scaleBand(rows.map(r => r.Month), [ml, W]).padding(0.28);
+    const keys = ['Prior', 'Cur'];
+    const xi = d3.scaleBand(keys, [0, x.bandwidth()]).padding(0.12);
+    const bw = Math.min(32, xi.bandwidth()), off = (xi.bandwidth() - bw) / 2;
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('class', 'sd-gl')
+      .attr('x1', ml).attr('x2', W).attr('y1', d => y(d)).attr('y2', d => y(d));
+    svg.append('g').selectAll('text').data(ticks).join('text')
+      .attr('x', ml - 12).attr('y', d => y(d)).attr('dy', '0.32em').attr('text-anchor', 'end').text(f);
+    svg.append('g').selectAll('text').data(rows).join('text')
+      .attr('x', d => x(d.Month) + x.bandwidth() / 2).attr('y', H - mb + 18).attr('text-anchor', 'middle').text(d => String(d.Month).slice(0, 3));
+    const grp = svg.append('g').selectAll('g').data(rows).join('g').attr('transform', d => `translate(${x(d.Month)},0)`);
+    keys.forEach(k => {
+      grp.append('rect').attr('class', `sd-yb sd-yb-${k}`)
+        .attr('x', xi(k) + off).attr('width', bw).attr('rx', 4)
+        .attr('y', d => y(d[`${m}_${k}`])).attr('height', d => y(0) - y(d[`${m}_${k}`]))
+        .attr('fill', k === 'Cur' ? dash.colors[0] : 'var(--cds-chart-muted)')
+        .style('transform-origin', `0 ${y(0)}px`)
+        .attr('class', animate ? 'sd-rise' : null);
+    });
+    grp.append('text').attr('class', 'sd-chg').attr('text-anchor', 'middle')
+      .attr('x', x.bandwidth() / 2)
+      .attr('y', d => y(Math.max(d[`${m}_Cur`], d[`${m}_Prior`])) - 8)
+      .attr('style', d => `fill:${d[`${m}_Cur`] >= d[`${m}_Prior`] ? 'var(--color-ok)' : 'var(--color-bad)'}`)
+      .text(d => { const p = d[`${m}_Prior`]; if (!p) return ''; const c = d[`${m}_Cur`] / p - 1; return `${c >= 0 ? '+' : '−'}${d3.format('.0%')(Math.abs(c))}`; });
+    grp.append('rect').attr('x', 0).attr('y', 0).attr('width', x.bandwidth()).attr('height', H).attr('fill', 'transparent')
+      .on('mousemove', (ev, d) => {
+        grp.selectAll('rect').attr('opacity', null);
+        grp.filter(o => o !== d).selectAll('rect').attr('opacity', 0.45);
+        showTip(yoyCard, yoyTip, ev, d.Month, [['var(--cds-chart-muted)', `${d.PriorYear}  ${f(d[`${m}_Prior`])}`], [dash.colors[0], `${d.Year}  ${f(d[`${m}_Cur`])}`]]);
+      })
+      .on('mouseleave', () => { grp.selectAll('rect').attr('opacity', null); yoyTip.style.display = 'none'; });
+    const lg = yoyCard.querySelector('.sd-yoy-legend');
+    lg.textContent = '';
+    [[rows[0].PriorYear, 'var(--cds-chart-muted)'], [rows[0].Year, dash.colors[0]]].forEach(([yr, c]) => {
+      const s = document.createElement('span'); const i = document.createElement('i'); i.className = 'sd-sw'; i.style.background = c;
+      s.append(i, document.createTextNode(String(yr))); lg.appendChild(s);
+    });
+  }
+  let yoyShown = false;
+  function fillYoy(animate) {
+    const d = dash.data('yoy_months');
+    if (d.status === 'ok' && d.data.length) { unskel(yoyEl); drawYoy(d.data, animate || !yoyShown); yoyShown = true; }
+    else if (isErr(d.status)) fail(yoyEl);
+    else if (d.status === 'loading') { yoyEl.textContent = ''; yoyEl.classList.add('dash-skeleton'); }
+    else { unskel(yoyEl); yoyEl.textContent = ''; }
+  }
+  wireSeg('#yoy', 'yy', v => { yyMetric = v; fillYoy(true); });
+
+  /* ---------- Table ---------- */
+  const tbox = root.querySelector('.sd-tablebox');
+  const table = root.querySelector('.sd-table');
+  const thead = table.querySelector('thead tr'), tbody = table.querySelector('tbody');
+  const search = root.querySelector('.sd-search'), countEl = root.querySelector('.sd-count');
+  let tRows = [], tCols = [], numCols = new Set(), sortCol = 'Row', sortDir = 1;
+
+  function renderTable() {
+    const q = search.value.trim().toLowerCase();
+    const rows = q ? tRows.filter(r => tCols.some(c => String(r[c] ?? '').toLowerCase().includes(q))) : tRows.slice();
+    const isNum = numCols.has(sortCol);
+    rows.sort((a, b) => {
+      const va = isNum ? Number(a[sortCol]) : String(a[sortCol] ?? ''), vb = isNum ? Number(b[sortCol]) : String(b[sortCol] ?? '');
+      return (va < vb ? -1 : va > vb ? 1 : 0) * sortDir;
+    });
+    thead.querySelectorAll('th').forEach(th => th.setAttribute('aria-sort', th.dataset.field === sortCol ? (sortDir > 0 ? 'ascending' : 'descending') : 'none'));
+    tbody.textContent = '';
+    const frag = document.createDocumentFragment();
+    for (const r of rows) {
+      const tr = document.createElement('tr');
+      for (const c of tCols) {
+        const td = document.createElement('td');
+        const v = r[c];
+        if (c === 'Row') td.textContent = String(v);
+        else if (numCols.has(c)) {
+          td.className = 'sd-num';
+          const n = Number(v);
+          td.textContent = v === '' || v == null ? '' : MONEY_COLS.has(c) ? money0(n) : PLAIN_COLS.has(c) ? String(n) : numFmt(n);
+          if (n < 0) td.classList.add('sd-neg');
+        }
+        else td.textContent = v == null ? '' : String(v);
+        tr.appendChild(td);
+      }
+      frag.appendChild(tr);
+    }
+    tbody.appendChild(frag);
+    countEl.textContent = q ? `${d3.format(',')(rows.length)} of ${d3.format(',')(tRows.length)}` : `${d3.format(',')(tRows.length)} rows`;
+  }
+
+  function buildTable(rows) {
+    tRows = rows;
+    tCols = Object.keys(rows[0] || {});
+    numCols = new Set(tCols.filter(c => c !== 'Row' && rows.every(r => r[c] === '' || r[c] == null || !isNaN(Number(r[c])))));
+    numCols.add('Row');
+    if (!tCols.includes(sortCol)) { sortCol = 'Row'; sortDir = 1; }
+    thead.textContent = '';
+    for (const c of tCols) {
+      const th = document.createElement('th');
+      th.dataset.field = c;
+      if (numCols.has(c) && c !== 'Row') th.className = 'sd-num';
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = c === 'Row' ? '#' : c.replace(/_/g, ' ');
+      b.addEventListener('click', () => { if (sortCol === c) sortDir = -sortDir; else { sortCol = c; sortDir = numCols.has(c) && c !== 'Row' ? -1 : 1; } renderTable(); });
+      th.appendChild(b);
+      thead.appendChild(th);
+    }
+    renderTable();
+  }
+  search.addEventListener('input', renderTable);
+
+  /* ---------- Draw ---------- */
+  dash.onData(() => {
+    const kpi = dash.data('kpi'), seg = dash.data('by_segment'), mo = dash.data('by_month');
+    const months = mo.status === 'ok' ? mo.data : [];
+
+    // window label, e.g. "Sep – Dec 2014"
+    const k0 = kpi.status === 'ok' && kpi.data.length ? kpi.data[0] : null;
+    root.querySelectorAll('.sd-w-from').forEach(el => { el.textContent = k0 ? mMon(k0.CurFrom) : '—'; });
+    root.querySelectorAll('.sd-w-to').forEach(el => { el.textContent = k0 ? `${mMon(k0.CurTo)} ${mYear(k0.CurTo)}` : '—'; });
+
+    // takeaway
+    const sales = k0 ? kpi.data.find(r => r.Metric === 'Sales') : null;
+    const cur = root.querySelector('.sd-t-cur'), chg = root.querySelector('.sd-t-chg'), ts = root.querySelector('.sd-t-topseg');
+    if (sales) {
+      [cur, chg].forEach(unskel);
+      cur.textContent = money(sales.Current);
+      chg.textContent = sales.Change == null ? 'with no earlier months to compare' : `${sales.Change >= 0 ? 'up' : 'down'} ${pct(Math.abs(sales.Change))}`;
+    } else if (kpi.status !== 'loading') { [cur, chg].forEach(unskel); cur.textContent = '—'; chg.textContent = '—'; }
+    if (seg.status === 'ok' && seg.data.length) { unskel(ts); ts.textContent = seg.data[0].Segment; }
+    else if (seg.status !== 'loading') { unskel(ts); ts.textContent = '—'; }
+
+    fillKpis(kpi, months);
+    fillInsights();
+
+    // trend
+    if (months.length) { unskel(trendEl); drawTrend(months); }
+    else if (isErr(mo.status)) fail(trendEl);
+    else if (mo.status === 'loading') { trendEl.textContent = ''; trendEl.classList.add('dash-skeleton'); }
+    else { unskel(trendEl); trendEl.textContent = ''; }
+
+    fillLists();
+    fillHeat();
+    fillYoy(false);
+
+    // table
+    const t = dash.data('table_rows');
+    if (t.status === 'ok') {
+      unskel(tbox);
+      const f = tbox.querySelector('.sd-fail'); if (f) f.remove();
+      table.style.display = '';
+      if (t.data !== tRows) buildTable(t.data);
+    } else if (isErr(t.status)) {
+      table.style.display = 'none';
+      if (!tbox.querySelector('.sd-fail')) { unskel(tbox); const f = document.createElement('div'); f.className = 'sd-fail'; f.textContent = 'Failed to load'; tbox.appendChild(f); }
+    }
+  });
+})();
+</script>
+
+</main>
+<script>
+(function () {
+  const SUN = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M3.4 12.6l1-1M11.6 4.4l1-1"/></svg>';
+  const MOON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 9.5A5.5 5.5 0 0 1 6.5 2.5a5.5 5.5 0 1 0 7 7z"/></svg>';
+  const html = document.documentElement, btn = document.querySelector('.tb-theme');
+  const current = () => html.dataset.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const paint = () => {
+    const dark = current() === 'dark';
+    btn.innerHTML = dark ? SUN : MOON;
+    btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+  };
+  btn.addEventListener('click', () => {
+    const next = current() === 'dark' ? 'light' : 'dark';
+    html.dataset.theme = next;
+    try { localStorage.setItem('sd-theme', next); } catch (e) {}
+    paint();
+  });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paint);
+  paint();
+
+  // highlight the section in view
+  const links = [...document.querySelectorAll('.tb-nav a')];
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(entries => entries.forEach(e => {
+      if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + e.target.id));
+    }), { rootMargin: '-40% 0px -55% 0px' });
+    links.forEach(a => { const s = document.querySelector(a.getAttribute('href')); if (s) io.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>
