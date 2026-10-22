@@ -2,7 +2,7 @@
 
 An end-to-end analytics project by **HarpalSinh Jhala**. It takes data from a Microsoft Fabric lakehouse and turns it into an interactive dashboard, built with AI-assisted analytics engineering.
 
-**Live dashboard:** https://harpalsinhjhala13.github.io/ai-sales-analytics/
+**Live dashboard:** https://harpalsinhjhala.github.io/ai-sales-analytics/
 
 ![Dashboard preview](assets/preview.png)
 
